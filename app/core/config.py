@@ -38,7 +38,7 @@ class Settings(BaseSettings):
         },
         "apps": {
             "models": {
-                "models": ["app.models.sku"],
+                "models": ["app.models.sku", "app.models.user"],
                 "default_connection": "mysql",
             },
         },

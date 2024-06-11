@@ -1,5 +1,5 @@
 from typing import Any, Dict, Generic, List, NewType, Tuple, Type, TypeVar, Union
-
+from tortoise.transactions import atomic
 from pydantic import BaseModel
 from tortoise.expressions import Q
 from tortoise.models import Model
@@ -26,6 +26,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             page_size
         ).order_by(*order)
 
+    @atomic()
     async def create(self, obj_in: CreateSchemaType) -> ModelType:
         if isinstance(obj_in, Dict):
             obj_dict = obj_in
@@ -35,6 +36,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await obj.save()
         return obj
 
+    @atomic()
     async def update(
         self, id: int, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
@@ -47,6 +49,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         await obj.save()
         return obj
 
+    @atomic()
     async def remove(self, id: int) -> None:
         obj = await self.get(id=id)
         await obj.delete()

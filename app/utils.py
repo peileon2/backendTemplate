@@ -9,7 +9,6 @@ from jinja2 import Template
 from jose import JWTError, jwt
 
 from app.core.config import settings
-from app.api.main import api_router
 
 
 @dataclass

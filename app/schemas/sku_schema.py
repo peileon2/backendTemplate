@@ -12,5 +12,6 @@ class SkuCreate(BaseModel):
 
 
 class SkuUpdate(BaseModel):
+    id: int
     sku_name: str
     height: float

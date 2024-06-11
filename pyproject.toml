@@ -15,6 +15,7 @@ cryptography = "^42.0.7"
 requests = "^2.32.3"
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}
 passlib = "^1.7.4"
+emails = "0.6"
 
 
 [build-system]
