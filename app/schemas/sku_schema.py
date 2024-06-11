@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Sku(BaseModel):
+class SkuBase(BaseModel):
     sku_name: str
     height: float
 

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: typing.List = ["*"]
     CORS_ALLOW_HEADERS: typing.List = ["*"]
-    ALGORITHM = "HS256"
+    ALGORITHM: str = "HS256"
     DEBUG: bool = True
     DB_URL: str = "mysql://root:123456@localhost:3306/paddletest"
     PROJECT_ROOT: str = os.path.abspath(
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
         },
         "apps": {
             "models": {
-                "models": ["app.models.sku", "app.models.user"],
+                "models": ["app.models.sku"],
                 "default_connection": "mysql",
             },
         },

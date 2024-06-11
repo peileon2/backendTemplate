@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from tortoise.contrib.fastapi import register_tortoise
-
+from app.api.main import api_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -15,3 +15,4 @@ register_tortoise(
     generate_schemas=True,
     add_exception_handlers=True,
 )
+app.include_router(api_router, prefix=settings.API_V1_STR)
