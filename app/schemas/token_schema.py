@@ -7,11 +7,11 @@ class Message(BaseModel):
 
 class Token(BaseModel):
     access_token: str = Field(..., max_length=255)
-    token_type: str = Field("bearer", max_length=255)
+    token_type: str = Field(default="bearer", max_length=255)
 
 
 class TokenPayload(BaseModel):
-    sub: int = None
+    sub: int
 
 
 class NewPassword(BaseModel):

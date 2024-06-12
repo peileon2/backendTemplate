@@ -4,7 +4,6 @@ from app.core.crud import CRUDBase
 from app.models.user import User
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.core.security import verify_password
-from app.models import User
 from app.core.security import get_password_hash
 
 
@@ -28,7 +27,7 @@ class UserController(CRUDBase[User, UserCreate, UserUpdate]):
     async def create_user(self, user_create: UserCreate) -> User:
         db_obj = User(
             email=user_create.email,
-            hashed_password=await get_password_hash(user_create.password),
+            hashed_password=get_password_hash(user_create.password),
         )
         await db_obj.save()
         return db_obj

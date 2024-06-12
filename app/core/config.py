@@ -1,6 +1,14 @@
 import os
 import typing
 from pydantic_settings import BaseSettings
+from pydantic import (
+    AnyUrl,
+    BeforeValidator,
+    HttpUrl,
+    PostgresDsn,
+    computed_field,
+    model_validator,
+)
 
 
 class Settings(BaseSettings):
@@ -46,6 +54,14 @@ class Settings(BaseSettings):
         "timezone": "Asia/Shanghai",
     }
     DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+    SMTP_HOST: str | None = None
+    EMAILS_FROM_EMAIL: str | None = None
+    EMAILS_FROM_NAME: str | None = None
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def emails_enabled(self) -> bool:
+        return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
 
 settings = Settings()
