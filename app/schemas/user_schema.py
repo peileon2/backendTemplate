@@ -22,7 +22,6 @@ class UserCreate(BaseModel):
     is_active: bool = Field(True, description="是否激活")
     is_superuser: bool = Field(False, description="是否超级用户")
     full_name: str = Field(None, description="全名", max_length=255)
-    create_time: str = Field(None, description="创建时间")
     password: str = Field(None, description="密码")
 
 
@@ -30,4 +29,3 @@ class UserUpdate(BaseModel):
     is_active: bool = Field(True, description="是否激活")
     is_superuser: bool = Field(False, description="是否超级用户")
     full_name: str = Field(None, description="全名", max_length=255)
-    create_time: str = Field(None, description="创建时间")

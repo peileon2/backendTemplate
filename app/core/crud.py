@@ -1,55 +1,60 @@
 from typing import Any, Dict, Generic, List, NewType, Tuple, Type, TypeVar, Union
-from tortoise.transactions import atomic
-from pydantic import BaseModel
-from tortoise.expressions import Q
-from tortoise.models import Model
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.sql.expression import ClauseElement
+
+Base = declarative_base()
 
 Total = NewType("Total", int)
-ModelType = TypeVar("ModelType", bound=Model)
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+ModelType = TypeVar("ModelType")
+CreateSchemaType = TypeVar("CreateSchemaType")
+UpdateSchemaType = TypeVar("UpdateSchemaType")
 
 
-# 适用于自增ID的数据库
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, model: Type[ModelType], session: AsyncSession):
         self.model = model
+        self.session = session
 
     async def get(self, id: int) -> ModelType:
-        return await self.model.get(id=id)
+        return await self.session.execute(select(self.model).filter_by(id=id)).scalar()
 
     async def get_list(
-        self, page: int, page_size: int, search: Q = Q(), order: list = []
+        self,
+        page: int,
+        page_size: int,
+        search: ClauseElement = None,
+        order: list = None,
     ) -> Tuple[Total, List[ModelType]]:
-        query = self.model.filter(search)
-        return await query.count(), await query.offset((page - 1) * page_size).limit(
-            page_size
-        ).order_by(*order)
+        query = select(self.model)
+        if search is not None:
+            query = query.filter(search)
+        total_count = await self.session.execute(query.count()).scalar()
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        if order is not None:
+            query = query.order_by(*order)
+        item_lists = await self.session.execute(query).scalars().all()
+        return (total_count, item_lists)
 
-    @atomic()
     async def create(self, obj_in: CreateSchemaType) -> ModelType:
-        if isinstance(obj_in, Dict):
-            obj_dict = obj_in
-        else:
-            obj_dict = obj_in.model_dump()
-        obj = self.model(**obj_dict)
-        await obj.save()
+        obj = self.model(**obj_in.dict())
+        self.session.add(obj)
+        await self.session.commit()
         return obj
 
-    @atomic()
     async def update(
         self, id: int, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
-        if isinstance(obj_in, Dict):
-            obj_dict = obj_in
-        else:
-            obj_dict = obj_in.model_dump(exclude_unset=True)
-        obj = await self.get(id=id)
-        obj = obj.update_from_dict(obj_dict)
-        await obj.save()
+        obj = await self.get(id)
+        for key, value in obj_in.dict(exclude_unset=True).items():
+            setattr(obj, key, value)
+        await self.session.commit()
         return obj
 
-    @atomic()
     async def remove(self, id: int) -> None:
-        obj = await self.get(id=id)
-        await obj.delete()
+        obj = await self.get(id)
+        self.session.delete(obj)
+        await self.session.commit()
