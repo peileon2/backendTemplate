@@ -1,7 +1,13 @@
-from tortoise import fields, Model, Tortoise, run_async
+from sqlalchemy import Column, String, Float, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
+
+Base = declarative_base()
 
 
-class Sku(Model):
-    sku_name = fields.CharField(max_length="50")
-    height = fields.FloatField()
-    create_time = fields.DatetimeField(auto_now_add=True, description="创建时间")
+class Sku(Base):
+    __tablename__ = "sku"
+
+    sku_name = Column(String(50), nullable=False)
+    height = Column(Float, nullable=False)
+    create_time = Column(DateTime, server_default=func.now(), nullable=False)

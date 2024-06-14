@@ -1,67 +1,127 @@
-import os
-import typing
-from pydantic_settings import BaseSettings
+import secrets
+import warnings
+from typing import Annotated, Any, Literal
+
 from pydantic import (
     AnyUrl,
     BeforeValidator,
     HttpUrl,
-    PostgresDsn,
     computed_field,
     model_validator,
 )
+from pydantic_core import MultiHostUrl
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
+from sqlalchemy.engine.url import URL
+
+
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
 
 
 class Settings(BaseSettings):
-    VERSION: str = "0.1.0"
-    APP_TITLE: str = "Vue FastAPI Template"
-    PROJECT_NAME: str = "Vue FastAPI Template"
-    APP_DESCRIPTION: str = "Description"
-    CORS_ORIGINS: typing.List = ["*"]
-    CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: typing.List = ["*"]
-    CORS_ALLOW_HEADERS: typing.List = ["*"]
-    ALGORITHM: str = "HS256"
-    DEBUG: bool = True
-    DB_URL: str = "mysql://root:123456@localhost:3306/paddletest"
-    PROJECT_ROOT: str = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), os.pardir)
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore"
     )
     API_V1_STR: str = "/api/v1"
-    BASE_DIR: str = os.path.abspath(os.path.join(PROJECT_ROOT, os.pardir))
-    LOGS_ROOT: str = os.path.join(BASE_DIR, "app/logs")
-    SECRET_KEY: str = "3488a63e1765035d386f05409663f55c83bfae3b3c61a932744b20ad14244dcf"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
-    TORTOISE_ORM: dict = {
-        "connections": {
-            "mysql": {
-                "engine": "tortoise.backends.mysql",
-                "credentials": {
-                    "host": "localhost",
-                    "port": 3306,
-                    "user": "root",
-                    "password": "123456",
-                    "database": "paddletest",
-                },
-            }
-        },
-        "apps": {
-            "models": {
-                "models": ["app.models.sku", "app.models.user"],
-                "default_connection": "mysql",
-            },
-        },
-        "use_tz": False,
-        "timezone": "Asia/Shanghai",
-    }
-    DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+    SECRET_KEY: str = secrets.token_urlsafe(32)
+    # 60 minutes * 24 hours * 8 days = 8 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    ALGORITHM: str = "HS256"
+    DOMAIN: str = "localhost"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def server_host(self) -> str:
+        # Use HTTPS for anything other than local development
+        if self.ENVIRONMENT == "local":
+            return f"http://{self.DOMAIN}"
+        return f"https://{self.DOMAIN}"
+
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
+        []
+    )
+
+    PROJECT_NAME: str
+    SENTRY_DSN: HttpUrl | None = None
+    MYSQL_SERVER: str = "localhost"
+    MYSQL_PORT: int = 3306
+    MYSQL_USER: str = "root"
+    MYSQL_PASSWORD: str = "123456"
+    MYSQL_DB: str = "paddletest"
+    # "host": "localhost",
+    # "port": 3306,
+    # "user": "root",
+    # "password": "123456",
+    # "database": "paddletest",
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return URL.create(
+            drivername="mysql+pymysql",
+            username=self.MYSQL_USER,
+            password=self.MYSQL_PASSWORD,
+            host=self.MYSQL_SERVER,
+            port=self.MYSQL_PORT,
+            database=self.MYSQL_DB,
+        ).__str__()
+
+    SMTP_TLS: bool = True
+    SMTP_SSL: bool = False
+    SMTP_PORT: int = 587
     SMTP_HOST: str | None = None
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    # TODO: update type to EmailStr when sqlmodel supports it
     EMAILS_FROM_EMAIL: str | None = None
     EMAILS_FROM_NAME: str | None = None
+
+    @model_validator(mode="after")
+    def _set_default_emails_from(self) -> Self:
+        if not self.EMAILS_FROM_NAME:
+            self.EMAILS_FROM_NAME = self.PROJECT_NAME
+        return self
+
+    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
     @computed_field  # type: ignore[misc]
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
+    # TODO: update type to EmailStr when sqlmodel supports it
+    EMAIL_TEST_USER: str = "test@example.com"
+    # TODO: update type to EmailStr when sqlmodel supports it
+    FIRST_SUPERUSER: str
+    FIRST_SUPERUSER_PASSWORD: str
+    USERS_OPEN_REGISTRATION: bool = False
 
-settings = Settings()
+    def _check_default_secret(self, var_name: str, value: str | None) -> None:
+        if value == "changethis":
+            message = (
+                f'The value of {var_name} is "changethis", '
+                "for security, please change it, at least for deployments."
+            )
+            if self.ENVIRONMENT == "local":
+                warnings.warn(message, stacklevel=1)
+            else:
+                raise ValueError(message)
+
+    @model_validator(mode="after")
+    def _enforce_non_default_secrets(self) -> Self:
+        self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
+        self._check_default_secret("MYSQL_PASSWORD", self.MYSQL_PASSWORD)
+        self._check_default_secret(
+            "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
+        )
+
+        return self
+
+
+settings = Settings()  # type: ignore
