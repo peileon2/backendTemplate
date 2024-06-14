@@ -32,6 +32,12 @@ USER的模型可由fastapi-users继承
 * login
 * crud-models
 
+权限认证：
+
+* 一个用户一天内不能请求创建API超过10次
+* 只有登陆后的用户，才能允许创建请求
+* 超级用户可以删除别的user
+
 ### utils
 
 * 用于编写业务内容
