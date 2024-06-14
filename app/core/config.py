@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     ALGORITHM: str = "HS256"
     DOMAIN: str = "localhost"
+    FIRST_SUPERUSER: str = "Admin"
+    FIRST_SUPERUSER_PASSWORD: str = "Password123"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     @computed_field  # type: ignore[misc]
@@ -47,30 +49,24 @@ class Settings(BaseSettings):
         []
     )
 
-    PROJECT_NAME: str
+    PROJECT_NAME: str = "fastapi_template"
     SENTRY_DSN: HttpUrl | None = None
     MYSQL_SERVER: str = "localhost"
     MYSQL_PORT: int = 3306
     MYSQL_USER: str = "root"
     MYSQL_PASSWORD: str = "123456"
-    MYSQL_DB: str = "paddletest"
-    # "host": "localhost",
-    # "port": 3306,
-    # "user": "root",
-    # "password": "123456",
-    # "database": "paddletest",
+    MYSQL_DB: str = "tests"
 
-    @computed_field  # type: ignore[misc]
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
+    def SQLALCHEMY_DATABASE_URI(self):
         return URL.create(
-            drivername="mysql+pymysql",
+            drivername="mysql+aiomysql",
             username=self.MYSQL_USER,
             password=self.MYSQL_PASSWORD,
             host=self.MYSQL_SERVER,
             port=self.MYSQL_PORT,
             database=self.MYSQL_DB,
-        ).__str__()
+        )
 
     SMTP_TLS: bool = True
     SMTP_SSL: bool = False

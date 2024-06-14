@@ -60,7 +60,7 @@ USER的模型可由fastapi-users继承
 
 * 避免重复造轮子
 
-### pydantic
+### pydantic & typing
 
 * 数据校验
 
@@ -72,6 +72,11 @@ USER的模型可由fastapi-users继承
 
 * 进行id传送
 * 免登录
+
+### sentry_sdk
+
+* 用户监视错误
+* 暂时不用
 
 ## 数据库
 

@@ -5,7 +5,7 @@ class UserBase(BaseModel):
     email: str = Field(
         ...,
         description="用户邮箱",
-        pattern="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
+        pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
     )
     is_active: bool = Field(True, description="是否激活")
     is_superuser: bool = Field(False, description="是否超级用户")
