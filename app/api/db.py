@@ -1,15 +1,27 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from app.core.config import settings
+from typing import AsyncGenerator
 
-# 定义数据库URL
+from fastapi import Depends
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+from app.core.config import settings
+from app.models.user import Base,User
+
 DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
 
-# 创建异步引擎
-async_engine = create_async_engine(DATABASE_URL, future=True, echo=True)
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
-# 创建一个函数来提供AsyncSession
-def get_session() -> AsyncSession:
-    # 创建一个新的AsyncSession实例
-    session: AsyncSession = AsyncSession(async_engine)
-    return session
+async def create_db_and_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
+
+
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+    yield SQLAlchemyUserDatabase(session, User)

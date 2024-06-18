@@ -7,7 +7,7 @@ Base = declarative_base()
 
 
 class Sku(Base):
-    __tablename__ = "tests"
+    __tablename__ = "sku"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     sku_name = Column(String(50), nullable=False)

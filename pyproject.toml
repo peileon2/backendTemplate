@@ -19,6 +19,7 @@ sqlalchemy = "^2.0.30"
 psycopg2 = "^2.9.9"
 sentry-sdk = "^2.5.1"
 aiomysql = "^0.2.0"
+fastapi-users = {extras = ["sqlalchemy"], version = "^13.0.0"}
 
 
 [build-system]
