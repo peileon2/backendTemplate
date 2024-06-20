@@ -60,6 +60,10 @@ USER的模型可由fastapi-users继承
 * 支持`fastapi-users`
 * 支持迁移时自定义主键
 
+### alembic
+
+迁移数据库
+
 ### fastapi-users
 
 * 集成了users的所有操作

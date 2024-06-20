@@ -21,7 +21,7 @@ sentry-sdk = "^2.5.1"
 aiomysql = "^0.2.0"
 fastapi-users = {extras = ["sqlalchemy"], version = "^13.0.0"}
 alembic = "^1.13.1"
-mysql-connector-python = "^8.4.0"
+asyncmy = "^0.2.9"
 
 
 [build-system]
