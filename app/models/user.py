@@ -11,4 +11,5 @@ class Base(DeclarativeBase):
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
-    pass
+    role: str
+    company: str
