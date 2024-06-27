@@ -14,6 +14,9 @@ class Sku(Base):
     __tablename__ = "sku"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    sku_name = Column(String(50), nullable=False)
+    sku_name = Column(String(50), nullable=False, unique=True)
     height = Column(Float, nullable=False)
+    length = Column(Float, nullable=False)
+    width = Column(Float, nullable=False)
+    weight = Column(Float, nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())

@@ -1,16 +1,20 @@
 from typing import List
 from app.controller.sku_controllers import SkuController
 from app.schemas.sku_schema import SkuBase, SkuCreate, SkuUpdate
-from fastapi import APIRouter, Query, HTTPException, status, Depends
+from fastapi import APIRouter, Query, HTTPException, status, Depends, Request
 from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.db import get_async_session
 from app.models.user import User
 from app.api.deps import current_active_user
-
+from slowapi.errors import RateLimitExceeded
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.models.sku import Sku
 from sqlalchemy import select
 
+# 初始化速率限制器
+limiter = Limiter(key_func=get_remote_address)
 router = APIRouter()
 
 
@@ -36,7 +40,9 @@ async def get_sku_by_id(
 
 
 @router.post("/", response_model=SkuBase, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def create_sku(
+    request: Request,
     sku: SkuCreate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
