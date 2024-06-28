@@ -67,7 +67,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def create(self, obj_in: CreateSchemaType) -> Optional[ModelType]:
         try:
-            obj_in_data = obj_in.dict()
+            obj_in_data = obj_in.model_dump()
             obj = self.model(**obj_in_data)
             self.session.add(obj)
             await self.session.commit()
@@ -75,6 +75,22 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return obj
         except Exception as e:
             logger.error(f"Error creating object: {e}")
+            await self.session.rollback()
+            return None
+
+    async def create_bulk(
+        self, objs_in: List[CreateSchemaType]
+    ) -> Optional[List[ModelType]]:
+        try:
+            objs_in_data = [obj_in.model_dump() for obj_in in objs_in]
+            objs = [self.model(**obj_in_data) for obj_in_data in objs_in_data]
+            self.session.add_all(objs)
+            await self.session.commit()
+            for obj in objs:
+                await self.session.refresh(obj)
+            return objs
+        except Exception as e:
+            logger.error(f"Error creating objects: {e}")
             await self.session.rollback()
             return None
 
@@ -86,7 +102,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             if obj is None:
                 return None
             update_data = (
-                obj_in.dict(exclude_unset=True)
+                obj_in.model_dump(exclude_unset=True)
                 if isinstance(obj_in, BaseModel)
                 else obj_in
             )

@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # 这个是您的模型导入路径，确保正确导入
-from app.models.user import User as user_base
-from app.models.sku import Sku as sku_base
+from app.models.user import Base as user_base
+from app.models.sku import Base as sku_base
+from app.models.deliverys import Base as delivery_base
 import asyncio
 from logging.config import fileConfig
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -24,7 +25,8 @@ fileConfig(config.config_file_name)
 # 你的模型的元数据，用于自动生成迁移脚本
 user_metadata = user_base.metadata
 sku_metadata = sku_base.metadata
-target_metadata = [user_metadata, sku_metadata]
+delivery_metadata = delivery_base.metadata
+target_metadata = [user_metadata, sku_metadata, delivery_metadata]
 
 
 def get_url():
