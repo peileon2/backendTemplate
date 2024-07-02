@@ -15,4 +15,5 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     role = Column(String(50), nullable=False)
     company = Column(String(50), nullable=False)
     # 定义与 Sku 表的关系
-    skus = relationship("Sku", back_populates="user")
+    skus = relationship("Sku", back_populates="user", cascade="")
+    assembleDeliveryFees = relationship("AssembleDeliveryFees", back_populates="user", cascade="")

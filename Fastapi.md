@@ -62,6 +62,14 @@ USER的模型可由fastapi-users继承
 
 ### alembic
 
+```
+alembic revision --autogenerate -m "Add" 
+```
+
+```
+alembic upgrade head
+```
+
 迁移数据库
 
 1. 配置数据库
