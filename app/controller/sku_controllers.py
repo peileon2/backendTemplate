@@ -5,19 +5,21 @@ from app.schemas.sku_schema import SkuCreate, SkuUpdate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import logging
+from uuid import UUID
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class SkuController(CRUDBase[Sku, SkuCreate, SkuUpdate]):
-    def __init__(self, session: AsyncSession):
-        super().__init__(model=Sku, session=session)
+
+    def __init__(self, session: AsyncSession, user_id: UUID):
+        super().__init__(model=Sku, session=session, user_id=user_id)
 
     async def get_by_sku_name(self, name: str) -> Optional[Sku]:
         try:
             result = await self.session.execute(
-                select(self.model).filter_by(sku_name=name)
+                select(self.model).filter_by(sku_name=name, user_id=self.user_id)
             )
             return result.scalar()
         except Exception as e:

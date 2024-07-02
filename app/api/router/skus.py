@@ -21,9 +21,11 @@ router = APIRouter()
 # 根据id获取sku
 @router.get("/{id}", response_model=SkuBase)
 async def get_sku_by_id(
-    id: int, session: AsyncSession = Depends(get_async_session)
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
 ) -> SkuBase:
-    sku_controller = SkuController(session=session)
+    sku_controller = SkuController(session=session, user_id=user.id)
     sku = await sku_controller.get(id=id)
     if sku is None:
         raise HTTPException(
@@ -47,7 +49,7 @@ async def create_sku(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
 ):
-    sku_controller = SkuController(session=session)
+    sku_controller = SkuController(session=session, user_id=user.id)
     sku = await sku_controller.create(obj_in=sku)
     if sku is None:
         raise HTTPException(
@@ -59,15 +61,22 @@ async def create_sku(
 # 更新SKU
 @router.put("/{id}", response_model=SkuBase)
 async def update_sku(
-    id: int, sku: SkuUpdate, session: AsyncSession = Depends(get_async_session)
+    id: int,
+    sku: SkuUpdate,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
 ):
-    sku_controller = SkuController(session=session)
+    sku_controller = SkuController(session=session, user_id=user.id)
     return await sku_controller.update(id=id, obj_in=sku)
 
 
 # 删除SKU
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_sku(id: int, session: AsyncSession = Depends(get_async_session)):
-    sku_controller = SkuController(session=session)
+async def delete_sku(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+):
+    sku_controller = SkuController(session=session, user_id=user.id)
     await sku_controller.remove(id=id)
     return None

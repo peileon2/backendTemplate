@@ -1,74 +1,111 @@
-from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey
+from sqlalchemy import (
+    Column,
+    String,
+    Float,
+    DateTime,
+    Integer,
+    ForeignKey,
+    Enum as SqlEnum,
+)
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
+from enum import Enum
 
 
-# 使用新的 DeclarativeBase
+class GdAndHd(Enum):
+    GROUND = 1
+    HOMEDELIVERY = 2
+
+
+class ResAndComm(Enum):
+    RESIDENTIAL = 1
+    COMMERCIAL = 2
+
+
+class AhsType(Enum):
+    AHS_Dimension = 1
+    AHS_Weight = 2
+    AHS_Packing = 3
+
+
+class DasType(Enum):
+    DAS = 1
+    DASE = 2
+    RAS = 3
+
+
 class Base(DeclarativeBase):
     pass
 
 
 class AssembleDeliveryFees(Base):
-    __tablename__ = "AssembleDeliveryFees"
+    __tablename__ = "assemble_delivery_fees"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    secoend_name = Column(String(50), nullable=False)
+    name = Column(String(50), nullable=False)
+    second_name = Column(String(50), nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())
-    # 使用 relationship 定义与 Child 的关系
-    base_rates = relationship("BaseRate", back_populates="assemble_delivery_fees")
-    das_items = relationship("Das", back_populates="assemble_delivery_fees")
-    oversize_items = relationship("Oversize", back_populates="assemble_delivery_fees")
-    ahs_items = relationship("Ahs", back_populates="assemble_delivery_fees")
+    base_rates = relationship("BaseRate", back_populates="delivery_version", cascade="")
+    das_items = relationship("Das", back_populates="delivery_version", cascade="")
+    oversizes = relationship("Oversize", back_populates="delivery_version", cascade="")
+    ahs_items = relationship("Ahs", back_populates="delivery_version", cascade="")
+    rdc_items = relationship("Rdc", back_populates="delivery_version", cascade="")
 
 
 class BaseRate(Base):
-    __tablename__ = "BaseRate"
+    __tablename__ = "base_rate"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())
     rate_weight = Column(Integer, nullable=False)
     zone = Column(Integer, nullable=False)
     fees = Column(Float, nullable=False)
-    delivery_version_id = Column(Integer, ForeignKey("AssembleDeliveryFees.id"))
+    delivery_version_id = Column(Integer, ForeignKey("assemble_delivery_fees.id"))
+    delivery_version = relationship("AssembleDeliveryFees", back_populates="base_rates")
 
 
 class Das(Base):
-    __tablename__ = "Das"
+    __tablename__ = "das"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())
-    das_type = Column(String(50), nullable=False)
-    gd_hd_type = Column(String(50), nullable=False)
-    res_comm_type = Column(String(50), nullable=False)
+    das_type = Column(SqlEnum(DasType), nullable=False)
+    gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
+    res_comm_type = Column(SqlEnum(ResAndComm), nullable=False)
     fees = Column(Float, nullable=False)
-    delivery_version_id = Column(Integer, ForeignKey("AssembleDeliveryFees.id"))
+    delivery_version_id = Column(Integer, ForeignKey("assemble_delivery_fees.id"))
+    delivery_version = relationship("AssembleDeliveryFees", back_populates="das_items")
 
 
 class Oversize(Base):
-    __tablename__ = "Oversize"
+    __tablename__ = "oversize"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())
-    os_type = Column(String(50), nullable=False)
-    gd_hd_type = Column(String(50), nullable=False)
+    gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     fees = Column(Float, nullable=False)
-    delivery_version_id = Column(Integer, ForeignKey("AssembleDeliveryFees.id"))
+    delivery_version_id = Column(Integer, ForeignKey("assemble_delivery_fees.id"))
+    delivery_version = relationship("AssembleDeliveryFees", back_populates="oversizes")
 
 
 class Ahs(Base):
-    __tablename__ = "Ahs"
+    __tablename__ = "ahs"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
     create_time = Column(DateTime, nullable=False, server_default=func.now())
-    ahs_type = Column(String(50), nullable=False)
-    gd_hd_type = Column(String(50), nullable=False)
-    res_comm_type = Column(String(50), nullable=False)
+    ahs_type = Column(SqlEnum(AhsType), nullable=False)
+    gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
+    res_comm_type = Column(SqlEnum(ResAndComm), nullable=False)
     fees = Column(Float, nullable=False)
-    delivery_version_id = Column(Integer, ForeignKey("AssembleDeliveryFees.id"))
+    delivery_version_id = Column(Integer, ForeignKey("assemble_delivery_fees.id"))
+    delivery_version = relationship("AssembleDeliveryFees", back_populates="ahs_items")
 
 
-# class GdAndHd(Base):
-#     __tablename__ = "GdAndHd"
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     create_time = Column(DateTime, nullable=False, server_default=func.now())
-
-
-# class ResAndComm(Base):
-#     __tablename__ = "ResAndComm"
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     create_time = Column(DateTime, nullable=False, server_default=func.now())
+class Rdc(Base):
+    __tablename__ = "rdc"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
+    create_time = Column(DateTime, nullable=False, server_default=func.now())
+    gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
+    fees = Column(Float, nullable=False)
+    delivery_version_id = Column(Integer, ForeignKey("assemble_delivery_fees.id"))
+    delivery_version = relationship("AssembleDeliveryFees", back_populates="rdc_items")
