@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
 
 # 这个是您的模型导入路径，确保正确导入
-# from app.models.user import Base,User
+from app.models.user import Base
 from app.models.deliverys import Base
-# from app.models.sku import Base,Sku
+from app.models.sku import Base
 
 import asyncio
 from logging.config import fileConfig

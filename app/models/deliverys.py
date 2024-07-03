@@ -9,29 +9,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from enum import Enum
-from app.models.user import Base,User
 
-class GdAndHd(Enum):
-    GROUND = 1
-    HOMEDELIVERY = 2
+from app.models.user import Base, User
+from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
-
-class ResAndComm(Enum):
-    RESIDENTIAL = 1
-    COMMERCIAL = 2
-
-
-class AhsType(Enum):
-    AHS_Dimension = 1
-    AHS_Weight = 2
-    AHS_Packing = 3
-
-
-class DasType(Enum):
-    DAS = 1
-    DASE = 2
-    RAS = 3
 
 class AssembleDeliveryFees(Base):
     __tablename__ = "assemble_delivery_fees"

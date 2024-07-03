@@ -1,111 +1,142 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import List, Optional
+from uuid import UUID
+from typing import List
+from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 
-# BaseRate Pydantic 模型
 class BaseRateBase(BaseModel):
-    create_time: datetime
+    name: str
+
     rate_weight: int
     zone: int
     fees: float
-    delivery_version_id: int
 
 
 class BaseRateCreate(BaseRateBase):
-    pass
+    delivery_version_id: int
 
 
 class BaseRateUpdate(BaseRateBase):
     id: int
+    delivery_version_id: int
 
 
-class BaseRateInDB(BaseRateBase):
+class BaseRate(BaseRateBase):
     id: int
+    delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         orm_mode = True
 
 
-# Das Pydantic 模型
 class DasBase(BaseModel):
-    create_time: datetime
-    das_type: str
-    gd_hd_type: str
-    res_comm_type: str
-    delivery_version_id: int
+    name: str
+
+    das_type: DasType
+    gd_hd_type: GdAndHd
+    res_comm_type: ResAndComm
+    fees: float
 
 
 class DasCreate(DasBase):
-    pass
+    delivery_version_id: int
 
 
 class DasUpdate(DasBase):
     id: int
+    delivery_version_id: int
 
 
-class DasInDB(DasBase):
+class Das(DasBase):
     id: int
     delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         orm_mode = True
 
 
-# Oversize Pydantic 模型
 class OversizeBase(BaseModel):
-    create_time: datetime
-    os_type: str
-    gd_hd_type: str
+    name: str
+    gd_hd_type: GdAndHd
     fees: float
-    delivery_version_id: int
 
 
 class OversizeCreate(OversizeBase):
-    pass
+    delivery_version_id: int
 
 
 class OversizeUpdate(OversizeBase):
     id: int
+    delivery_version_id: int
 
 
-class OversizeInDB(OversizeBase):
+class Oversize(OversizeBase):
     id: int
     delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         orm_mode = True
 
 
-# Ahs Pydantic 模型
 class AhsBase(BaseModel):
-    create_time: datetime
-    ahs_type: str
-    gd_hd_type: str
-    res_comm_type: str
-    delivery_version_id: int
+    name: str
+    ahs_type: AhsType
+    gd_hd_type: GdAndHd
+    res_comm_type: ResAndComm
+    fees: float
 
 
 class AhsCreate(AhsBase):
-    pass
+    delivery_version_id: int
 
 
 class AhsUpdate(AhsBase):
     id: int
+    delivery_version_id: int
 
 
-class AhsInDB(AhsBase):
+class Ahs(AhsBase):
     id: int
     delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         orm_mode = True
 
 
-# AssembleDeliveryFees Pydantic 模型
+class RdcBase(BaseModel):
+    name: str
+
+    gd_hd_type: GdAndHd
+    fees: float
+
+
+class RdcCreate(RdcBase):
+    delivery_version_id: int
+
+
+class RdcUpdate(RdcBase):
+    id: int
+    delivery_version_id: int
+
+
+class Rdc(RdcBase):
+    id: int
+    delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        orm_mode = True
+
+
 class AssembleDeliveryFeesBase(BaseModel):
-    secoend_name: str
-    create_time: datetime
+    name: str
+    second_name: str
+    user_id: UUID
 
 
 class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
@@ -116,12 +147,14 @@ class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
     id: int
 
 
-class AssembleDeliveryFeesInDB(AssembleDeliveryFeesBase):
+class AssembleDeliveryFees(AssembleDeliveryFeesBase):
     id: int
-    base_rates: List[BaseRateInDB] = []
-    das_items: List[DasInDB] = []
-    oversize_items: List[OversizeInDB] = []
-    ahs_items: List[AhsInDB] = []
+    create_time: datetime = Field(default_factory=datetime.utcnow)
+    base_rates: List[BaseRate] = []
+    das_items: List[Das] = []
+    oversizes: List[Oversize] = []
+    ahs_items: List[Ahs] = []
+    rdc_items: List[Rdc] = []
 
     class Config:
         orm_mode = True

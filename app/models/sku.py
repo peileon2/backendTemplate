@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey,Integer
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.models.user import Base,User
+from app.models.user import Base, User
+
 
 class Sku(Base):
     __tablename__ = "sku"
