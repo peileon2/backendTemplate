@@ -8,7 +8,8 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
 
 
 class UserCreate(schemas.BaseUserCreate):
-    pass
+    role :str
+    company :str
 
 
 class UserUpdate(schemas.BaseUserUpdate):

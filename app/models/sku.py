@@ -13,7 +13,7 @@ class Sku(Base):
     length = Column(Float, nullable=False)
     width = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
-    create_time = Column(DateTime, nullable=False)
+    create_time = Column(DateTime, nullable=False, server_default=func.now())
     user_id = Column(String(36), ForeignKey(User.id))  # 使用 UUID 类型作为外键
 
     # 定义与 User 表的关系

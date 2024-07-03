@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class SkuController(CRUDBase[Sku, SkuCreate, SkuUpdate]):
 
-    def __init__(self, session: AsyncSession, user_id: UUID):
+    def __init__(self, session: AsyncSession, user_id: str):
         super().__init__(model=Sku, session=session, user_id=user_id)
 
     async def get_by_sku_name(self, name: str) -> Optional[Sku]:

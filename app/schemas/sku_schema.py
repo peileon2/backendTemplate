@@ -20,7 +20,6 @@ class SkuCreate(BaseModel):
     length: float
     width: float
     weight: float
-    user_id: str
 
     @field_validator("sku_name")
     def sku_name_must_be_unique(cls, v):
@@ -37,4 +36,4 @@ class SkuUpdate(BaseModel):
     length: float
     width: float
     weight: float
-    user_id: str
+

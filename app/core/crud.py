@@ -31,10 +31,10 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 ## 根据id进行增删改查的基类
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType], session: AsyncSession, user_id: UUID):
+    def __init__(self, model: Type[ModelType], session: AsyncSession, user_id: str):
         self.model = model
         self.session = session
-        self.user_id = user_id  # Add user_id attribute
+        self.user_id = str(user_id)  # Add user_id attribute
 
     async def get(self, id: int) -> Optional[ModelType]:
         try:
@@ -81,6 +81,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             obj_in_data = obj_in.model_dump()
             obj_in_data["user_id"] = self.user_id  # Set user_id in the data
             obj = self.model(**obj_in_data)
+            print(obj)
             self.session.add(obj)
             await self.session.commit()
             await self.session.refresh(obj)
