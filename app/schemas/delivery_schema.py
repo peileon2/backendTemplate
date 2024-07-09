@@ -136,7 +136,6 @@ class Rdc(RdcBase):
 class AssembleDeliveryFeesBase(BaseModel):
     name: str
     second_name: str
-    user_id: UUID
 
 
 class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
