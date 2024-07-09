@@ -88,22 +88,18 @@ class AhsBase(BaseModel):
     gd_hd_type: GdAndHd
     res_comm_type: ResAndComm
     fees: float
+    delivery_version_id: int
 
 
 class AhsCreate(AhsBase):
-    delivery_version_id: int
+    pass
 
 
 class AhsUpdate(AhsBase):
     id: int
-    delivery_version_id: int
 
 
 class Ahs(AhsBase):
-    id: int
-    delivery_version_id: int
-    create_time: datetime = Field(default_factory=datetime.utcnow)
-
     class Config:
         orm_mode = True
 
@@ -146,7 +142,7 @@ class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
     id: int
 
 
-class AssembleDeliveryFees(AssembleDeliveryFeesBase):
+class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
     base_rates: List[BaseRate] = []
@@ -154,6 +150,14 @@ class AssembleDeliveryFees(AssembleDeliveryFeesBase):
     oversizes: List[Oversize] = []
     ahs_items: List[Ahs] = []
     rdc_items: List[Rdc] = []
+
+    class Config:
+        orm_mode = True
+
+
+class AssembleDeliveryFees(AssembleDeliveryFeesBase):
+    id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:
         orm_mode = True

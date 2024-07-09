@@ -52,6 +52,7 @@ class Das(Base):
     gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     res_comm_type = Column(SqlEnum(ResAndComm), nullable=False)
     fees = Column(Float, nullable=False)
+    discount = Column(Float, nullable=False)
     delivery_version_id = Column(Integer, ForeignKey(AssembleDeliveryFees.id))
     delivery_version = relationship("AssembleDeliveryFees", back_populates="das_items")
 
@@ -63,6 +64,7 @@ class Oversize(Base):
     create_time = Column(DateTime, nullable=False, server_default=func.now())
     gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     fees = Column(Float, nullable=False)
+    discount = Column(Float, nullable=False)
     delivery_version_id = Column(Integer, ForeignKey(AssembleDeliveryFees.id))
     delivery_version = relationship("AssembleDeliveryFees", back_populates="oversizes")
 
@@ -76,6 +78,7 @@ class Ahs(Base):
     gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     res_comm_type = Column(SqlEnum(ResAndComm), nullable=False)
     fees = Column(Float, nullable=False)
+    discount = Column(Float, nullable=False)
     delivery_version_id = Column(Integer, ForeignKey(AssembleDeliveryFees.id))
     delivery_version = relationship("AssembleDeliveryFees", back_populates="ahs_items")
 
@@ -87,5 +90,6 @@ class Rdc(Base):
     create_time = Column(DateTime, nullable=False, server_default=func.now())
     gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     fees = Column(Float, nullable=False)
+    discount = Column(Float, nullable=False)
     delivery_version_id = Column(Integer, ForeignKey(AssembleDeliveryFees.id))
     delivery_version = relationship("AssembleDeliveryFees", back_populates="rdc_items")
