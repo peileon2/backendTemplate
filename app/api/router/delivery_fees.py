@@ -1,6 +1,5 @@
 from typing import List
 from fastapi import APIRouter, Query, HTTPException, status, Depends, Request
-from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.db import get_async_session
 from app.api.deps import current_active_user
@@ -13,6 +12,16 @@ from app.schemas.delivery_schema import (
     AssembleDeliveryFees,
     AssembleDeliveryFeesCreate,
     AssembleDeliveryFeesUpdate,
+    AhsCreate,
+    AhsUpdate,
+    OversizeCreate,
+    OversizeUpdate,
+    BaseRateCreate,
+    BaseRateUpdate,
+    DasCreate,
+    DasUpdate,
+    RdcCreate,
+    RdcUpdate,
 )
 from app.controller.deliveryControllers import (
     AssembleController,
@@ -33,13 +42,13 @@ async def get_assemble_by_id(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
 ) -> AssembleDeliveryFees:
-    sku_controller = AssembleController(session=session, user_id=user.id)
-    sku = await sku_controller.get(id=id)
-    if sku is None:
+    assemble_controller = AssembleController(session=session, user_id=user.id)
+    assemble = await assemble_controller.get(id=id)
+    if assemble is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="SKU not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
         )
-    return sku
+    return assemble
 
 
 @router.post(
@@ -56,6 +65,41 @@ async def create_assemble(
     assemble = await assemble_controller.create(obj_in=assemble)
     if assemble is None:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="SKU created failed"
+            status_code=status.HTTP_409_CONFLICT, detail="Assemble creation failed"
+        )
+    return assemble
+
+
+# 创建带有子项的Assemble
+@router.post(
+    "/with-children",
+    response_model=AssembleDeliveryFees,
+    status_code=status.HTTP_201_CREATED,
+)
+@limiter.limit("5/minute")  # 限制为每分钟5次请求
+async def create_assemble_with_children(
+    request: Request,
+    assemble: AssembleDeliveryFeesCreate,
+    ahs_list: List[AhsCreate] = [],
+    base_rate_list: List[BaseRateCreate] = [],
+    oversize_list: List[OversizeCreate] = [],
+    das_list: List[DasCreate] = [],
+    rdc_list: List[RdcCreate] = [],
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+):
+    assemble_controller = AssembleController(session=session, user_id=user.id)
+    assemble = await assemble_controller.create_with_children(
+        obj_in=assemble,
+        ahs_list=ahs_list,
+        base_rate_list=base_rate_list,
+        oversize_list=oversize_list,
+        das_list=das_list,
+        rdc_list=rdc_list,
+    )
+    if assemble is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Assemble with children creation failed",
         )
     return assemble
