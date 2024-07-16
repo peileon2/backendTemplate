@@ -43,18 +43,21 @@ class AssembleController(
         das_list: Optional[List[DasCreate]] = None,
         rdc_list: Optional[List[RdcCreate]] = None,
     ) -> AssembleDeliveryFees:
-        async with self.session.begin():
+        try:
             db_obj = self.model(**obj_in.dict(), user_id=self.user_id)
             self.session.add(db_obj)
             await self.session.flush()
-
+            # 添加子对象
             await self._add_children(
                 db_obj.id, ahs_list, base_rate_list, oversize_list, das_list, rdc_list
             )
-
+            # 提交事务
             await self.session.commit()
             await self.session.refresh(db_obj)
             return db_obj
+        except:
+            # 如果有错误，回滚事务
+            await self.session.rollback()
 
     async def update_with_children(
         self,
@@ -77,8 +80,6 @@ class AssembleController(
             await self._update_children(
                 ahs_list, base_rate_list, oversize_list, das_list, rdc_list
             )
-
-            await self.session.commit()
             await self.session.refresh(db_obj)
             return db_obj
 
@@ -105,7 +106,6 @@ class AssembleController(
                 return False
 
             await self.session.delete(db_obj)
-            await self.session.commit()
             return True
 
     async def _add_children(
