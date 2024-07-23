@@ -8,13 +8,14 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 class BaseRateBase(BaseModel):
     name: str
 
-    rate_weight: int
-    zone: int
-    fees: float
+    # rate_weight: int
+    # zone: int
+    # fees: float
 
 
 class BaseRateCreate(BaseRateBase):
-    delivery_version_id: int
+    pass
+
 
 
 class BaseRateUpdate(BaseRateBase):
@@ -34,14 +35,14 @@ class BaseRate(BaseRateBase):
 class DasBase(BaseModel):
     name: str
 
-    das_type: DasType
-    gd_hd_type: GdAndHd
-    res_comm_type: ResAndComm
-    fees: float
+    # das_type: DasType
+    # gd_hd_type: GdAndHd
+    # res_comm_type: ResAndComm
+    # fees: float
 
 
 class DasCreate(DasBase):
-    delivery_version_id: int
+    pass
 
 
 class DasUpdate(DasBase):
@@ -60,17 +61,17 @@ class Das(DasBase):
 
 class OversizeBase(BaseModel):
     name: str
-    gd_hd_type: GdAndHd
-    fees: float
+    # gd_hd_type: GdAndHd
+    # fees: float
 
 
 class OversizeCreate(OversizeBase):
-    delivery_version_id: int
+    pass
 
 
 class OversizeUpdate(OversizeBase):
     id: int
-    delivery_version_id: int
+
 
 
 class Oversize(OversizeBase):
@@ -84,11 +85,11 @@ class Oversize(OversizeBase):
 
 class AhsBase(BaseModel):
     name: str
-    ahs_type: AhsType
-    gd_hd_type: GdAndHd
-    res_comm_type: ResAndComm
-    fees: float
-    delivery_version_id: int
+    # ahs_type: AhsType
+    # gd_hd_type: GdAndHd
+    # res_comm_type: ResAndComm
+    # fees: float
+
 
 
 class AhsCreate(AhsBase):
@@ -106,14 +107,12 @@ class Ahs(AhsBase):
 
 class RdcBase(BaseModel):
     name: str
-
-    gd_hd_type: GdAndHd
-    fees: float
+    # gd_hd_type: GdAndHd 
+    # fees: float
 
 
 class RdcCreate(RdcBase):
-    delivery_version_id: int
-
+    pass
 
 class RdcUpdate(RdcBase):
     id: int
@@ -131,7 +130,6 @@ class Rdc(RdcBase):
 
 class AssembleDeliveryFeesBase(BaseModel):
     name: str
-    second_name: str
 
 
 class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
@@ -144,7 +142,6 @@ class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
 
 class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     id: int
-    create_time: datetime = Field(default_factory=datetime.utcnow)
     base_rates: List[BaseRate] = []
     das_items: List[Das] = []
     oversizes: List[Oversize] = []

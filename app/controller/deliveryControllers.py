@@ -48,16 +48,44 @@ class AssembleController(
             self.session.add(db_obj)
             await self.session.flush()
             # 添加子对象
-            await self._add_children(
-                db_obj.id, ahs_list, base_rate_list, oversize_list, das_list, rdc_list
-            )
+            if ahs_list:
+                for ahs in ahs_list:
+                    ahs_obj = Ahs(
+                        # **ahs.dict(), delivery_version_id=db_obj.id
+                            name="string",delivery_version_id=db_obj.id
+                        )
+                    print(ahs_obj)
+                    db_obj.ahs_items.append(ahs_obj)
+            if base_rate_list:
+                for base_rate in base_rate_list:
+                    base_rate_obj = BaseRate(
+                        **base_rate.dict(), delivery_version_id=db_obj.id
+
+                    )
+                    db_obj.base_rates.append(base_rate_obj)
+            if oversize_list:
+                for oversize in oversize_list:
+                    oversize_obj = Oversize(
+                        **oversize.dict(), delivery_version_id=db_obj.id
+                    )
+                    db_obj.oversizes.append(oversize_obj)
+            if das_list:
+                for das in das_list:
+                    das_obj = Das(**das.dict(), delivery_version_id=db_obj.id)
+                    db_obj.das_items.append(das_obj)
+            if rdc_list:
+                for rdc in rdc_list:
+                    rdc_obj = Rdc(**rdc.dict(), delivery_version_id=db_obj.id)
+                    db_obj.rdc_items.append(rdc_obj)
             # 提交事务
+
             await self.session.commit()
             await self.session.refresh(db_obj)
             return db_obj
         except:
             # 如果有错误，回滚事务
             await self.session.rollback()
+
 
     async def update_with_children(
         self,
@@ -68,7 +96,7 @@ class AssembleController(
         das_list: Optional[List[DasUpdate]] = None,
         rdc_list: Optional[List[RdcUpdate]] = None,
     ) -> Optional[AssembleDeliveryFees]:
-        async with self.session.begin():
+        try:
             db_obj = await self.session.get(self.model, obj_in.id)
             if not db_obj:
                 logger.error(f"Object with id {obj_in.id} not found.")
@@ -80,12 +108,16 @@ class AssembleController(
             await self._update_children(
                 ahs_list, base_rate_list, oversize_list, das_list, rdc_list
             )
+            await self.session.commit()
             await self.session.refresh(db_obj)
             return db_obj
+        except:
+            await self.session.rollback()
+            raise
 
     async def select_with_children(self, id: int) -> Optional[AssembleDeliveryFees]:
-        async with self.session() as session:
-            result = await session.execute(
+        try:
+            result = await self.session.execute(
                 select(self.model)
                 .options(
                     joinedload(self.model.ahs_items),
@@ -97,50 +129,23 @@ class AssembleController(
                 .filter(self.model.id == id)
             )
             return result.scalars().first()
+        except:
+            await self.session.rollback()
+            raise
 
     async def delete_with_children(self, id: int) -> bool:
-        async with self.session.begin():
+        try:
             db_obj = await self.session.get(self.model, id)
             if not db_obj:
                 logger.error(f"Object with id {id} not found.")
                 return False
 
             await self.session.delete(db_obj)
+            await self.session.commit()
             return True
+        except:
+            await self.session.rollback()
 
-    async def _add_children(
-        self,
-        parent_id: UUID,
-        ahs_list: Optional[List[AhsCreate]] = None,
-        base_rate_list: Optional[List[BaseRateCreate]] = None,
-        oversize_list: Optional[List[OversizeCreate]] = None,
-        das_list: Optional[List[DasCreate]] = None,
-        rdc_list: Optional[List[RdcCreate]] = None,
-    ):
-        if ahs_list:
-            for ahs in ahs_list:
-                ahs_obj = Ahs(**ahs.dict(), delivery_version_id=parent_id)
-                self.session.add(ahs_obj)
-        if base_rate_list:
-            for base_rate in base_rate_list:
-                base_rate_obj = BaseRate(
-                    **base_rate.dict(), delivery_version_id=parent_id
-                )
-                self.session.add(base_rate_obj)
-        if oversize_list:
-            for oversize in oversize_list:
-                oversize_obj = Oversize(
-                    **oversize.dict(), delivery_version_id=parent_id
-                )
-                self.session.add(oversize_obj)
-        if das_list:
-            for das in das_list:
-                das_obj = Das(**das.dict(), delivery_version_id=parent_id)
-                self.session.add(das_obj)
-        if rdc_list:
-            for rdc in rdc_list:
-                rdc_obj = Rdc(**rdc.dict(), delivery_version_id=parent_id)
-                self.session.add(rdc_obj)
 
     async def _update_children(
         self,
