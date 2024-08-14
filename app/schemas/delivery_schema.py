@@ -7,16 +7,12 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 class BaseRateBase(BaseModel):
     name: str
-
     # rate_weight: int
     # zone: int
     # fees: float
 
-
 class BaseRateCreate(BaseRateBase):
     pass
-
-
 
 class BaseRateUpdate(BaseRateBase):
     id: int
@@ -24,7 +20,6 @@ class BaseRateUpdate(BaseRateBase):
 
 
 class BaseRate(BaseRateBase):
-    id: int
     delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
@@ -51,7 +46,6 @@ class DasUpdate(DasBase):
 
 
 class Das(DasBase):
-    id: int
     delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
@@ -75,7 +69,6 @@ class OversizeUpdate(OversizeBase):
 
 
 class Oversize(OversizeBase):
-    id: int
     delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
@@ -120,7 +113,6 @@ class RdcUpdate(RdcBase):
 
 
 class Rdc(RdcBase):
-    id: int
     delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
@@ -139,14 +131,13 @@ class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
 class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
     id: int
 
-
+## CreateWithChidren
 class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
-    id: int
-    base_rates: List[BaseRate] = []
-    das_items: List[Das] = []
-    oversizes: List[Oversize] = []
-    ahs_items: List[Ahs] = []
-    rdc_items: List[Rdc] = []
+    base_rates: List[BaseRateCreate] = []
+    das_items: List[DasCreate] = []
+    oversizes: List[OversizeCreate] = []
+    ahs_items: List[AhsCreate] = []
+    rdc_items: List[RdcCreate] = []
 
     class Config:
         orm_mode = True

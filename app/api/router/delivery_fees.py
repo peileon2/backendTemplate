@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.delivery_schema import (
     AssembleDeliveryFees,
     AssembleDeliveryFeesCreate,
+    AssembleDeliveryFeesChildren,
     AssembleDeliveryFeesUpdate,
     AhsCreate,
     AhsUpdate,
@@ -79,24 +80,12 @@ async def create_assemble(
 @limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def create_assemble_with_children(
     request: Request,
-    assemble: AssembleDeliveryFeesCreate,
-    ahs_list: List[AhsCreate] = [],
-    base_rate_list: List[BaseRateCreate] = [],
-    oversize_list: List[OversizeCreate] = [],
-    das_list: List[DasCreate] = [],
-    rdc_list: List[RdcCreate] = [],
+    assemble: AssembleDeliveryFeesChildren,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
 ):
     assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.create_with_children(
-        obj_in=assemble,
-        ahs_list=ahs_list,
-        base_rate_list=base_rate_list,
-        oversize_list=oversize_list,
-        das_list=das_list,
-        rdc_list=rdc_list,
-    )
+    assemble = await assemble_controller.create_with_children(obj_in=assemble)
     if assemble is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

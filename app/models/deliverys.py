@@ -34,7 +34,7 @@ class BaseRate(Base):
     __tablename__ = "base_rate"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    create_time = Column(DateTime, nullable=False, server_default=func.now())
+    create_time = Column(DateTime, server_default=func.now())
     # rate_weight = Column(Integer, nullable=False)
     # zone = Column(Integer, nullable=False)
     # fees = Column(Float, nullable=False)
@@ -60,7 +60,7 @@ class Oversize(Base):
     __tablename__ = "oversize"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    create_time = Column(DateTime, nullable=False, server_default=func.now())
+    create_time = Column(DateTime, server_default=func.now())
     # gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     # fees = Column(Float, nullable=False)
     # discount = Column(Float, nullable=False)
@@ -72,7 +72,7 @@ class Ahs(Base):
     __tablename__ = "ahs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    create_time = Column(DateTime, nullable=False, server_default=func.now())
+    create_time = Column(DateTime, server_default=func.now())
     # ahs_type = Column(SqlEnum(AhsType), nullable=False)
     # gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     # res_comm_type = Column(SqlEnum(ResAndComm), nullable=False)
@@ -86,7 +86,7 @@ class Rdc(Base):
     __tablename__ = "rdc"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    create_time = Column(DateTime, nullable=False, server_default=func.now())
+    create_time = Column(DateTime, server_default=func.now())
     # gd_hd_type = Column(SqlEnum(GdAndHd), nullable=False)
     # fees = Column(Float, nullable=False)
     # discount = Column(Float, nullable=False)

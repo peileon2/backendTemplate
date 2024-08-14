@@ -10,6 +10,7 @@ from app.models.deliverys import AssembleDeliveryFees, Ahs, BaseRate, Oversize, 
 from app.schemas.delivery_schema import (
     AssembleDeliveryFeesCreate,
     AssembleDeliveryFeesUpdate,
+    AssembleDeliveryFeesChildren,
     AhsCreate,
     AhsUpdate,
     OversizeCreate,
@@ -36,56 +37,61 @@ class AssembleController(
 
     async def create_with_children(
         self,
-        obj_in: AssembleDeliveryFeesCreate,
-        ahs_list: Optional[List[AhsCreate]] = None,
-        base_rate_list: Optional[List[BaseRateCreate]] = None,
-        oversize_list: Optional[List[OversizeCreate]] = None,
-        das_list: Optional[List[DasCreate]] = None,
-        rdc_list: Optional[List[RdcCreate]] = None,
+        obj_in: AssembleDeliveryFeesChildren#AssembleDeliveryFeesCreate,#
     ) -> AssembleDeliveryFees:
         try:
-            db_obj = self.model(**obj_in.dict(), user_id=self.user_id)
-            self.session.add(db_obj)
-            await self.session.flush()
-            # 添加子对象
-            if ahs_list:
-                for ahs in ahs_list:
-                    ahs_obj = Ahs(
-                        # **ahs.dict(), delivery_version_id=db_obj.id
-                            name="string",delivery_version_id=db_obj.id
-                        )
-                    print(ahs_obj)
-                    db_obj.ahs_items.append(ahs_obj)
-            if base_rate_list:
-                for base_rate in base_rate_list:
-                    base_rate_obj = BaseRate(
-                        **base_rate.dict(), delivery_version_id=db_obj.id
+            new_assemble_delivery_fee = self.model(
+                name=obj_in.name, user_id=self.user_id #**obj_in.model_dump()
+            )
+            # 创建 BaseRate 子项
+            for base_rate in obj_in.base_rates:
+                new_base_rate = BaseRate(
+                    name=base_rate.name,
+                    delivery_version_id=new_assemble_delivery_fee.id
+                )
+                new_assemble_delivery_fee.base_rates.append(new_base_rate)
 
-                    )
-                    db_obj.base_rates.append(base_rate_obj)
-            if oversize_list:
-                for oversize in oversize_list:
-                    oversize_obj = Oversize(
-                        **oversize.dict(), delivery_version_id=db_obj.id
-                    )
-                    db_obj.oversizes.append(oversize_obj)
-            if das_list:
-                for das in das_list:
-                    das_obj = Das(**das.dict(), delivery_version_id=db_obj.id)
-                    db_obj.das_items.append(das_obj)
-            if rdc_list:
-                for rdc in rdc_list:
-                    rdc_obj = Rdc(**rdc.dict(), delivery_version_id=db_obj.id)
-                    db_obj.rdc_items.append(rdc_obj)
-            # 提交事务
+            # 创建 Das 子项
+            for das in obj_in.das_items:
+                new_das = Das(
+                    name=das.name,
+                    delivery_version_id=new_assemble_delivery_fee.id
+                )
+                new_assemble_delivery_fee.das_items.append(new_das)
 
+            # 创建 Oversize 子项
+            for oversize in obj_in.oversizes:
+                new_oversize = Oversize(
+                    name=oversize.name,
+                    delivery_version_id=new_assemble_delivery_fee.id
+                )
+                new_assemble_delivery_fee.oversizes.append(new_oversize)
+
+            # 创建 Ahs 子项
+            for ahs in obj_in.ahs_items:
+                new_ahs = Ahs(
+                    name=ahs.name,
+                    delivery_version_id=new_assemble_delivery_fee.id
+                )
+                new_assemble_delivery_fee.ahs_items.append(new_ahs)
+
+            # 创建 Rdc 子项
+            for rdc in obj_in.rdc_items:
+                new_rdc = Rdc(
+                    name=rdc.name,
+                    delivery_version_id=new_assemble_delivery_fee.id
+                )
+                new_assemble_delivery_fee.rdc_items.append(new_rdc)
+            self.session.add(new_assemble_delivery_fee)  # 添加父对象到 session
             await self.session.commit()
-            await self.session.refresh(db_obj)
-            return db_obj
-        except:
-            # 如果有错误，回滚事务
-            await self.session.rollback()
 
+            # 刷新并返回结果
+            await self.session.refresh(new_assemble_delivery_fee)
+            return new_assemble_delivery_fee
+        except Exception as e:
+            await self.session.rollback()
+            logger.error(f"Error creating AssembleDeliveryFees with children: {e}")
+            raise
 
     async def update_with_children(
         self,
