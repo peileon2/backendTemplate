@@ -1,5 +1,5 @@
 from typing import List
-from app.controller.sku_controllers import SkuController
+from app.controller.skuControllers import SkuController
 from app.schemas.sku_schema import SkuBase, SkuCreate, SkuUpdate
 from fastapi import APIRouter, Query, HTTPException, status, Depends, Request
 from typing import Any

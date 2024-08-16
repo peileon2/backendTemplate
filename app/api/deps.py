@@ -9,7 +9,7 @@ from fastapi_users.authentication import (
     JWTStrategy,
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
-from app.controller.user_controllers import UserManager
+from app.controller.userControllers import UserManager
 from app.api.db import User, get_user_db
 
 from app.core.config import settings
