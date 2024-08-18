@@ -11,8 +11,10 @@ class BaseRateBase(BaseModel):
     # zone: int
     # fees: float
 
+
 class BaseRateCreate(BaseRateBase):
     pass
+
 
 class BaseRateUpdate(BaseRateBase):
     id: int
@@ -67,7 +69,6 @@ class OversizeUpdate(OversizeBase):
     id: int
 
 
-
 class Oversize(OversizeBase):
     delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
@@ -82,7 +83,6 @@ class AhsBase(BaseModel):
     # gd_hd_type: GdAndHd
     # res_comm_type: ResAndComm
     # fees: float
-
 
 
 class AhsCreate(AhsBase):
@@ -100,12 +100,13 @@ class Ahs(AhsBase):
 
 class RdcBase(BaseModel):
     name: str
-    # gd_hd_type: GdAndHd 
+    # gd_hd_type: GdAndHd
     # fees: float
 
 
 class RdcCreate(RdcBase):
     pass
+
 
 class RdcUpdate(RdcBase):
     id: int
@@ -131,6 +132,7 @@ class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
 class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
     id: int
 
+
 ## CreateWithChidren
 class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     base_rates: List[BaseRateCreate] = []
@@ -149,3 +151,11 @@ class AssembleDeliveryFees(AssembleDeliveryFeesBase):
 
     class Config:
         orm_mode = True
+
+
+class DemandChargeCreate:
+    pass
+
+
+class DemandChargeUpdate:
+    pass
