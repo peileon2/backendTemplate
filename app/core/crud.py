@@ -12,7 +12,7 @@ from typing import (
 )
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base, Query
+from sqlalchemy.orm import declarative_base, Query, DeclarativeBase
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from pydantic import BaseModel
 import logging
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 Total = NewType("Total", int)
-ModelType = TypeVar("ModelType", bound=Base)
+ModelType = TypeVar("ModelType", bound=DeclarativeBase)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 

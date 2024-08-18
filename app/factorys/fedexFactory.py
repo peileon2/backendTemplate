@@ -15,6 +15,38 @@ from app.controller.deliveryControllers import (
     OverSizeController,
     RdcController,
 )
+from app.models.Enums import AhsType
+
+
+class Judge:
+    def __init__(self, _sku: Sku) -> None:
+        self.sku = _sku
+
+    @property
+    def max_length(self):
+        return max(self.sku.height + self.sku.weight + self.sku.width)
+
+    @property
+    def min_length(self):
+        return min(self.sku.height + self.sku.weight + self.sku.width)
+
+    @property
+    def middle_length(self):
+        return (
+            self.sku.height
+            + self.sku.weight
+            + self.sku.width
+            - self.max_length
+            - self.min_length
+        )
+
+    def judge_ahs_type(self):
+        type_ahs = None
+        if self.max_length > 48 or self.middle_length > 30 or self.round_size > 105:
+            type_ahs = AhsType.AHS_Dimension
+        if self.sku.weight > 50:
+            type_ahs = AhsType.AHS_Weight
+        return type_ahs
 
 
 class FedexFactory:
@@ -36,8 +68,23 @@ class FedexFactory:
         self.rdc = _rdc
         self.demandCharge = _demandCharge
 
-    def judge(self):
-        pass
+    @property
+    def max_length(self):
+        return max(self.sku.height + self.sku.weight + self.sku.width)
+
+    @property
+    def min_length(self):
+        return min(self.sku.height + self.sku.weight + self.sku.width)
+
+    @property
+    def middle_length(self):
+        return (
+            self.sku.height
+            + self.sku.weight
+            + self.sku.width
+            - self.max_length
+            - self.min_length
+        )
 
     @property
     def rated_weight_charge(self):
@@ -55,10 +102,7 @@ class FedexFactory:
 
     @property
     def round_size(self):
-        max = max(self.sku.height + self.sku.weight + self.sku.width)
-        min = min(self.sku.height + self.sku.weight + self.sku.width)
-        middle = self.sku.height + self.sku.weight + self.sku.width - max - min
-        return max + middle * 2 + min * 2
+        return self.max_length + self.middle_length * 2 + self.min_length * 2
 
     @property
     def oversize_charge(self):
