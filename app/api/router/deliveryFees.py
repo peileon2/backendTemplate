@@ -92,3 +92,20 @@ async def create_assemble_with_children(
             detail="Assemble with children creation failed",
         )
     return assemble
+
+
+# 根据id获取Assemble,并算出fedex价格
+@router.get("/{id}", response_model=AssembleDeliveryFees)
+async def get_assemble_by_id(
+    id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+) -> AssembleDeliveryFees:
+    assemble_controller = AssembleController(session=session, user_id=user.id)
+    assemble = await assemble_controller.get(id=id)
+    if assemble is None: 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
+        )
+
+    return assemble

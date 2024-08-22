@@ -52,7 +52,7 @@ class AssembleController(
             new_assemble_delivery_fee = self.model(
                 name=obj_in.name, user_id=self.user_id  # **obj_in.model_dump()
             )
-            # 创建 BaseRate 子项
+            # 创建 BaseRate 子项 
             for base_rate in obj_in.base_rates:
                 new_base_rate = BaseRate(
                     name=base_rate.name,
@@ -96,7 +96,6 @@ class AssembleController(
         except Exception as e:
             await self.session.rollback()
             logger.error(f"Error creating AssembleDeliveryFees with children: {e}")
-            raise
 
     async def update_with_children(
         self,
@@ -124,7 +123,6 @@ class AssembleController(
             return db_obj
         except:
             await self.session.rollback()
-            raise
 
     async def select_with_children(self, id: int) -> Optional[AssembleDeliveryFees]:
         try:
@@ -142,7 +140,6 @@ class AssembleController(
             return result.scalars().first()
         except:
             await self.session.rollback()
-            raise
 
     async def delete_with_children(self, id: int) -> bool:
         try:

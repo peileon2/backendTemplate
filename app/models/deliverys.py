@@ -116,9 +116,9 @@ class DemandCharge(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     DIM = Column(Integer, nullable=False, default=250)
-    peak_os_charge = Column(float, nullable=False, default=0)
-    peak_rdc_charge = Column(float, nullable=False, default=0)
-    fuel_rate = Column(float, nullable=False, default=0.15)
+    peak_os_charge = Column(Float, nullable=False, default=0)
+    peak_rdc_charge = Column(Float, nullable=False, default=0)
+    fuel_rate = Column(Float, nullable=False, default=0.15)
     create_time = Column(DateTime, server_default=func.now())
     delivery_version_id = Column(
         Integer, ForeignKey(AssembleDeliveryFees.id), unique=True
