@@ -7,13 +7,13 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 class BaseRateBase(BaseModel):
     name: str
-    # rate_weight: int
-    # zone: int
-    # fees: float
+    rate_weight: int
+    zone: int
+    fees: float
 
 
 class BaseRateCreate(BaseRateBase):
-    pass
+    name: str
 
 
 class BaseRateUpdate(BaseRateBase):
@@ -31,11 +31,10 @@ class BaseRate(BaseRateBase):
 
 class DasBase(BaseModel):
     name: str
-
-    # das_type: DasType
-    # gd_hd_type: GdAndHd
-    # res_comm_type: ResAndComm
-    # fees: float
+    das_type: DasType
+    gd_hd_type: GdAndHd
+    res_comm_type: ResAndComm
+    fees: float
 
 
 class DasCreate(DasBase):
@@ -57,8 +56,8 @@ class Das(DasBase):
 
 class OversizeBase(BaseModel):
     name: str
-    # gd_hd_type: GdAndHd
-    # fees: float
+    gd_hd_type: GdAndHd
+    fees: float
 
 
 class OversizeCreate(OversizeBase):
@@ -79,10 +78,10 @@ class Oversize(OversizeBase):
 
 class AhsBase(BaseModel):
     name: str
-    # ahs_type: AhsType
-    # gd_hd_type: GdAndHd
-    # res_comm_type: ResAndComm
-    # fees: float
+    ahs_type: AhsType
+    gd_hd_type: GdAndHd
+    res_comm_type: ResAndComm
+    fees: float
 
 
 class AhsCreate(AhsBase):
@@ -100,8 +99,8 @@ class Ahs(AhsBase):
 
 class RdcBase(BaseModel):
     name: str
-    # gd_hd_type: GdAndHd
-    # fees: float
+    gd_hd_type: GdAndHd
+    fees: float
 
 
 class RdcCreate(RdcBase):

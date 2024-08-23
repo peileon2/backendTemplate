@@ -25,7 +25,7 @@ bearer_transport = BearerTransport(tokenUrl=f"{settings.API_V1_STR}/auth/jwt/log
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=SECRET, lifetime_seconds=7 * 24 * 3600)
 
 
 auth_backend = AuthenticationBackend(

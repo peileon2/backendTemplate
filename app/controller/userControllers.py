@@ -15,15 +15,11 @@ from app.api.db import get_async_session
 from app.api.db import User, get_user_db
 from app.core.smtpEmail import SmtpEmail
 
-SECRET = settings.SECRET_KEY
-
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
-    reset_password_token_secret = SECRET
-    verification_token_secret = SECRET
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
-        SmtpEmail.send_email(user.email,"hello","Thank You")
+        SmtpEmail.send_email(user.email, "hello", "Thank You")
         print(f"User {user.id} has registered.")
 
     async def on_after_forgot_password(
@@ -35,4 +31,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
-        SmtpEmail.send_email(user.email, "Verify your email", f"Here is your verification link: http://yourdomain.com/verify?token={token}")
+        SmtpEmail.send_email(
+            user.email,
+            "Verify your email",
+            f"Here is your verification link: http://yourdomain.com/verify?token={token}",
+        )
