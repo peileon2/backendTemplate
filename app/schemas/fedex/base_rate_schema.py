@@ -1,0 +1,29 @@
+from pydantic import BaseModel, Field
+from datetime import datetime
+from uuid import UUID
+from typing import List
+from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
+
+
+class BaseRateBase(BaseModel):
+    name: str
+    rate_weight: int
+    zone: int
+    fees: float
+
+
+class BaseRateCreate(BaseRateBase):
+    name: str
+
+
+class BaseRateUpdate(BaseRateBase):
+    id: int
+    delivery_version_id: int
+
+
+class BaseRate(BaseRateBase):
+    delivery_version_id: int
+    create_time: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        orm_mode = True
