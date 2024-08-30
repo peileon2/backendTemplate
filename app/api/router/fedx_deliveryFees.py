@@ -91,7 +91,7 @@ async def get_assemble_by_id(
     user: User = Depends(current_active_user),
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.get(id=id)
+    assemble = await assemble_controller.select_with_children(id=id)
     if assemble is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"

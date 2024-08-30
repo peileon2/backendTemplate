@@ -7,8 +7,35 @@
 用于存储数据库结构，并迁移，方便orm调用
 
 * SKU
+
+| key    | type   |
+| ------ | ------ |
+| id     | int    |
+| name   | string |
+| width  | float  |
+| height | float  |
+| length | float  |
+| weight | float  |
+
 * USER
-* ...
+
+| key           | type        |
+| ------------- | ----------- |
+| fastapi-users | class       |
+| sku           | List(class) |
+| deliveryFees  | list(class) |
+
+* DliveryFees
+
+| key      | type        |
+| -------- | ----------- |
+| id       | int         |
+| name     | str         |
+| baserate | list[class] |
+| ahs      | list[class] |
+| rdc      | list[class] |
+| os       | list[class] |
+|          |             |
 
 USER的模型可由fastapi-users继承
 
@@ -20,6 +47,30 @@ USER的模型可由fastapi-users继承
 * create
 * update
 * delete
+
+##### 类型1--不包含字项
+
+1. select-schema
+   1. 不含id
+   2. 不含关系
+   3. 包含其他字段（不敏感）
+2. create-schema
+   1. 不含id（自增）
+   2. 不含外键id（无外键）
+   3. 包含
+3. update-schema
+
+##### 类型2--包含子项
+
+1. select-schema
+   1. 不包含id
+   2. 不含关系
+   3. 包含子项字段
+2. create-schema
+   1. 不含id
+   2.  不含外键id（controller内部运转，不由外界传入）
+   3. 包含其他字段
+3. update-schema
 
 ### controller
 
