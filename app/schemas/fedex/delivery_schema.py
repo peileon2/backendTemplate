@@ -2,21 +2,23 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List
 
-from app.schemas.ahs_schema import AhsCreate
-from app.schemas.base_rate_schema import BaseRateCreate
-from app.schemas.das_schema import DasCreate
-from app.schemas.oversize_schema import OversizeCreate
-from app.schemas.rdc_schema import RdcCreate
+from app.schemas.fedex.ahs_schema import AhsCreate
+from app.schemas.fedex.base_rate_schema import BaseRateCreate
+from app.schemas.fedex.das_schema import DasCreate
+from app.schemas.fedex.oversize_schema import OversizeCreate
+from app.schemas.fedex.rdc_schema import RdcCreate
+from app.schemas.fedex.demand_schema import DemandChargeCreate
 
 
 class AssembleDeliveryFeesBase(BaseModel):
     name: str
 
 
-class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
-    pass
+# class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
+#     pass
 
 
+## 根据主键修改
 class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
     id: int
 
@@ -28,6 +30,7 @@ class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     oversizes: List[OversizeCreate] = []
     ahs_items: List[AhsCreate] = []
     rdc_items: List[RdcCreate] = []
+    demand_item: DemandChargeCreate
 
     class Config:
         orm_mode = True
@@ -39,11 +42,3 @@ class AssembleDeliveryFees(AssembleDeliveryFeesBase):
 
     class Config:
         orm_mode = True
-
-
-class DemandChargeCreate:
-    pass
-
-
-class DemandChargeUpdate:
-    pass

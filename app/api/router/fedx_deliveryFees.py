@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 # 根据id获取Assemble
-@router.get("/{id}", response_model=AssembleDeliveryFees)
+@router.get("/{id}/get", response_model=AssembleDeliveryFees)
 async def get_assemble_by_id(
     id: int,
     session: AsyncSession = Depends(get_async_session),
@@ -41,28 +41,31 @@ async def get_assemble_by_id(
     return assemble
 
 
-@router.post(
-    "/", response_model=AssembleDeliveryFees, status_code=status.HTTP_201_CREATED
-)
-@limiter.limit("5/minute")  # 限制为每分钟5次请求
-async def create_assemble(
-    request: Request,
-    assemble: AssembleDeliveryFeesCreate,
-    session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(current_active_user),
-):
-    assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.create(obj_in=assemble)
-    if assemble is None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Assemble creation failed"
-        )
-    return assemble
+# 用于独立创建
+# @router.post(
+#     "/{id}/create",
+#     response_model=AssembleDeliveryFees,
+#     status_code=status.HTTP_201_CREATED,
+# )
+# @limiter.limit("5/minute")  # 限制为每分钟5次请求
+# async def create_assemble(
+#     request: Request,
+#     assemble: AssembleDeliveryFeesCreate,
+#     session: AsyncSession = Depends(get_async_session),
+#     user: User = Depends(current_active_user),
+# ):
+#     assemble_controller = AssembleController(session=session, user_id=user.id)
+#     assemble = await assemble_controller.create(obj_in=assemble)
+#     if assemble is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_409_CONFLICT, detail="Assemble creation failed"
+#         )
+#     return assemble
 
 
 # 创建带有子项的Assemble
 @router.post(
-    "/with-children",
+    "/{id}/create",
     response_model=AssembleDeliveryFees,
     status_code=status.HTTP_201_CREATED,
 )

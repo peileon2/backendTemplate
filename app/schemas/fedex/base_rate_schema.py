@@ -18,11 +18,9 @@ class BaseRateCreate(BaseRateBase):
 
 class BaseRateUpdate(BaseRateBase):
     id: int
-    delivery_version_id: int
 
 
 class BaseRate(BaseRateBase):
-    delivery_version_id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

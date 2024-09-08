@@ -6,6 +6,10 @@ from typing import List
 
 class DemandChargeBase(BaseModel):
     name: str
+    DIM: int
+    peak_os_charge: float
+    peak_rdc_charge: float
+    fuel_rate: float
 
 
 class DemandChargeCreate(DemandChargeBase):
@@ -17,5 +21,7 @@ class DemandChargeUpdate(DemandChargeBase):
 
 
 class DemandCharge(DemandChargeBase):
+    create_time: datetime = Field(default_factory=datetime.utcnow)
+
     class Config:
         orm_mode = True

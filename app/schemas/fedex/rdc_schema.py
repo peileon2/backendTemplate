@@ -17,7 +17,6 @@ class RdcCreate(RdcBase):
 
 class RdcUpdate(RdcBase):
     id: int
-    delivery_version_id: int
 
 
 class Rdc(RdcBase):

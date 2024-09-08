@@ -15,20 +15,16 @@ from app.models.deliverys import (
     Rdc,
     DemandCharge,
 )
-from app.schemas.delivery_schema import (
-    AssembleDeliveryFeesCreate,
+from app.schemas.fedex.delivery_schema import (
     AssembleDeliveryFeesUpdate,
     AssembleDeliveryFeesChildren,
-    AhsCreate,
-    AhsUpdate,
-    OversizeCreate,
-    OversizeUpdate,
-    BaseRateCreate,
-    BaseRateUpdate,
-    DasCreate,
-    DasUpdate,
-    RdcCreate,
-    RdcUpdate,
+)
+from app.schemas.fedex.ahs_schema import AhsUpdate, AhsCreate
+from app.schemas.fedex.base_rate_schema import BaseRateUpdate, BaseRateCreate
+from app.schemas.fedex.das_schema import DasUpdate, DasCreate
+from app.schemas.fedex.oversize_schema import OversizeUpdate, OversizeCreate
+from app.schemas.fedex.rdc_schema import RdcUpdate, RdcCreate
+from app.schemas.fedex.demand_schema import (
     DemandChargeCreate,
     DemandChargeUpdate,
 )
@@ -39,54 +35,55 @@ logger = logging.getLogger(__name__)
 
 class AssembleController(
     CRUDBase[
-        AssembleDeliveryFees, AssembleDeliveryFeesCreate, AssembleDeliveryFeesUpdate
+        AssembleDeliveryFees, AssembleDeliveryFeesChildren, AssembleDeliveryFeesUpdate
     ]
 ):
     def __init__(self, session: AsyncSession, user_id: UUID):
         super().__init__(model=AssembleDeliveryFees, session=session, user_id=user_id)
 
     async def create_with_children(
-        self, obj_in: AssembleDeliveryFeesChildren  # AssembleDeliveryFeesCreate,#
+        self, obj_in: AssembleDeliveryFeesChildren
     ) -> AssembleDeliveryFees:
         try:
             new_assemble_delivery_fee = self.model(
                 name=obj_in.name, user_id=self.user_id  # **obj_in.model_dump()
             )
-            # 创建 BaseRate 子项 
+            # 创建 BaseRate 子项
             for base_rate in obj_in.base_rates:
-                new_base_rate = BaseRate(
-                    name=base_rate.name,
-                    delivery_version_id=new_assemble_delivery_fee.id,
-                )
+                base_rate_data = base_rate.model_dump()
+                new_base_rate = BaseRate(**base_rate_data)
                 new_assemble_delivery_fee.base_rates.append(new_base_rate)
 
             # 创建 Das 子项
             for das in obj_in.das_items:
-                new_das = Das(
-                    name=das.name, delivery_version_id=new_assemble_delivery_fee.id
-                )
+                das_data = das.model_dump()
+                new_das = Das(**das_data)
                 new_assemble_delivery_fee.das_items.append(new_das)
 
             # 创建 Oversize 子项
             for oversize in obj_in.oversizes:
-                new_oversize = Oversize(
-                    name=oversize.name, delivery_version_id=new_assemble_delivery_fee.id
-                )
+                oversize_data = oversize.model_dump()
+                new_oversize = Oversize(**oversize_data)
                 new_assemble_delivery_fee.oversizes.append(new_oversize)
 
             # 创建 Ahs 子项
             for ahs in obj_in.ahs_items:
-                new_ahs = Ahs(
-                    name=ahs.name, delivery_version_id=new_assemble_delivery_fee.id
-                )
+                ahs_data = ahs.model_dump()
+                new_ahs = Ahs(**ahs_data)
                 new_assemble_delivery_fee.ahs_items.append(new_ahs)
 
             # 创建 Rdc 子项
             for rdc in obj_in.rdc_items:
-                new_rdc = Rdc(
-                    name=rdc.name, delivery_version_id=new_assemble_delivery_fee.id
-                )
+                rdc_data = rdc.model_dump()
+                new_rdc = Rdc(**rdc_data)
                 new_assemble_delivery_fee.rdc_items.append(new_rdc)
+
+            if obj_in.demand_item:
+                demand_charge_data = obj_in.demand_item.model_dump()
+                new_assemble_delivery_fee.demand_charge = DemandCharge(
+                    **demand_charge_data
+                )
+
             self.session.add(new_assemble_delivery_fee)  # 添加父对象到 session
             await self.session.commit()
 
@@ -100,11 +97,6 @@ class AssembleController(
     async def update_with_children(
         self,
         obj_in: AssembleDeliveryFeesUpdate,
-        ahs_list: Optional[List[AhsUpdate]] = None,
-        base_rate_list: Optional[List[BaseRateUpdate]] = None,
-        oversize_list: Optional[List[OversizeUpdate]] = None,
-        das_list: Optional[List[DasUpdate]] = None,
-        rdc_list: Optional[List[RdcUpdate]] = None,
     ) -> Optional[AssembleDeliveryFees]:
         try:
             db_obj = await self.session.get(self.model, obj_in.id)
@@ -134,6 +126,7 @@ class AssembleController(
                     joinedload(self.model.oversizes),
                     joinedload(self.model.das_items),
                     joinedload(self.model.rdc_items),
+                    joinedload(self.model.demand_charge),
                 )
                 .filter(self.model.id == id)
             )
@@ -161,6 +154,7 @@ class AssembleController(
         oversize_list: Optional[List[OversizeUpdate]] = None,
         das_list: Optional[List[DasUpdate]] = None,
         rdc_list: Optional[List[RdcUpdate]] = None,
+        demand_charge: Optional[DemandChargeUpdate] = None,
     ):
         if ahs_list:
             for ahs in ahs_list:
@@ -198,42 +192,42 @@ class AssembleController(
                         setattr(rdc_obj, field, value)
 
 
-class BaseController(CRUDBase[BaseRate, BaseRateCreate, BaseRateUpdate]):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=BaseRate, session=session, user_id=user_id)
+# class BaseController(CRUDBase[BaseRate, BaseRateCreate, BaseRateUpdate]):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=BaseRate, session=session, user_id=user_id)
 
-    async def get_fees_by_zone(self):
-        try:
-            query = select(self.model).filter_by(id=id, user_id=self.user_id)
-            result = await self.session.execute(query)
-            return result.scalar()
-        except Exception as e:
-            logger.error(f"Error fetching object with id {id}: {e}")
-            return None
-
-
-class AHSController(CRUDBase[Ahs, AhsCreate, AhsUpdate]):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=Ahs, session=session, user_id=user_id)
+#     async def get_fees_by_zone(self):
+#         try:
+#             query = select(self.model).filter_by(id=id, user_id=self.user_id)
+#             result = await self.session.execute(query)
+#             return result.scalar()
+#         except Exception as e:
+#             logger.error(f"Error fetching object with id {id}: {e}")
+#             return None
 
 
-class OverSizeController(CRUDBase[Oversize, OversizeCreate, OversizeUpdate]):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=Oversize, session=session, user_id=user_id)
+# class AHSController(CRUDBase[Ahs, AhsCreate, AhsUpdate]):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=Ahs, session=session, user_id=user_id)
 
 
-class DasController(CRUDBase[Das, DasCreate, DasUpdate]):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=Das, session=session, user_id=user_id)
+# class OverSizeController(CRUDBase[Oversize, OversizeCreate, OversizeUpdate]):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=Oversize, session=session, user_id=user_id)
 
 
-class RdcController(CRUDBase[Rdc, RdcCreate, RdcUpdate]):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=Rdc, session=session, user_id=user_id)
+# class DasController(CRUDBase[Das, DasCreate, DasUpdate]):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=Das, session=session, user_id=user_id)
 
 
-class DemandChargeController(
-    CRUDBase[DemandCharge, DemandChargeCreate, DemandChargeUpdate]
-):
-    def __init__(self, session: AsyncSession, user_id: UUID):
-        super().__init__(model=Rdc, session=session, user_id=user_id)
+# class RdcController(CRUDBase[Rdc, RdcCreate, RdcUpdate]):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=Rdc, session=session, user_id=user_id)
+
+
+# class DemandChargeController(
+#     CRUDBase[DemandCharge, DemandChargeCreate, DemandChargeUpdate]
+# ):
+#     def __init__(self, session: AsyncSession, user_id: UUID):
+#         super().__init__(model=Rdc, session=session, user_id=user_id)
