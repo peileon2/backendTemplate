@@ -65,7 +65,7 @@ async def get_assemble_by_id(
 
 # 创建带有子项的Assemble
 @router.post(
-    "/{id}/create",
+    "/create",
     response_model=AssembleDeliveryFees,
     status_code=status.HTTP_201_CREATED,
 )
