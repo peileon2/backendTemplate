@@ -12,6 +12,12 @@ from app.schemas.fedex.demand_schema import DemandChargeCreate
 
 class AssembleDeliveryFeesBase(BaseModel):
     name: str
+    base_rates: List[BaseRateCreate] = []
+    das_items: List[DasCreate] = []
+    oversizes: List[OversizeCreate] = []
+    ahs_items: List[AhsCreate] = []
+    rdc_items: List[RdcCreate] = []
+    demand_item: DemandChargeCreate
 
 
 # class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
@@ -25,15 +31,7 @@ class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
 
 ## CreateWithChidren
 class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
-    base_rates: List[BaseRateCreate] = []
-    das_items: List[DasCreate] = []
-    oversizes: List[OversizeCreate] = []
-    ahs_items: List[AhsCreate] = []
-    rdc_items: List[RdcCreate] = []
-    demand_item: DemandChargeCreate
-
-    class Config:
-        orm_mode = True
+    pass
 
 
 class AssembleDeliveryFees(AssembleDeliveryFeesBase):
