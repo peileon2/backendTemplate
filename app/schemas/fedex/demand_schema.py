@@ -5,7 +5,6 @@ from typing import List
 
 
 class DemandChargeBase(BaseModel):
-    name: str
     DIM: int
     peak_os_charge: float
     peak_rdc_charge: float

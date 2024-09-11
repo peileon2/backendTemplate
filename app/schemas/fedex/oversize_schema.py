@@ -6,7 +6,6 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 
 class OversizeBase(BaseModel):
-    name: str
     gd_hd_type: GdAndHd
     fees: float
 

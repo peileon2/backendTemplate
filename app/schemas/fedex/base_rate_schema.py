@@ -6,14 +6,13 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 
 class BaseRateBase(BaseModel):
-    name: str
     rate_weight: int
     zone: int
     fees: float
 
 
 class BaseRateCreate(BaseRateBase):
-    name: str
+    pass
 
 
 class BaseRateUpdate(BaseRateBase):

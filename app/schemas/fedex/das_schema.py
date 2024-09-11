@@ -6,7 +6,6 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 
 class DasBase(BaseModel):
-    name: str
     das_type: DasType
     gd_hd_type: GdAndHd
     res_comm_type: ResAndComm

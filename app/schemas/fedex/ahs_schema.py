@@ -6,7 +6,6 @@ from app.models.Enums import GdAndHd, ResAndComm, AhsType, DasType
 
 
 class AhsBase(BaseModel):
-    name: str
     ahs_type: AhsType
     gd_hd_type: GdAndHd
     res_comm_type: ResAndComm
@@ -23,7 +22,7 @@ class AhsUpdate(AhsBase):
     id: int
 
 
-## 展示用类
+## 展示用类,直接对父增删改，故无需暴露子id
 class Ahs(AhsBase):
     create_time: datetime = Field(default_factory=datetime.utcnow)
 

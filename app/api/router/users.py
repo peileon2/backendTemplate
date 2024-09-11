@@ -4,7 +4,6 @@ from fastapi import Depends, APIRouter
 
 from app.api.db import User, create_db_and_tables
 from app.schemas.user_schema import UserRead, UserUpdate
-from app.schemas.vertifyCode import VerifyCodeModel
 from fastapi import APIRouter, Query, HTTPException, status, Depends, Request
 from app.api.deps import auth_backend, current_active_user, fastapi_users
 

@@ -114,7 +114,7 @@ USER的模型可由fastapi-users继承
 ### alembic
 
 ```
-alembic revision --autogenerate -m "Add" 
+alembic revision --autogenerate -m "first" 
 ```
 
 ```
