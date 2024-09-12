@@ -34,7 +34,8 @@ class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     pass
 
 
-class AssembleDeliveryFees(AssembleDeliveryFeesBase):
+class AssembleDeliveryFees(BaseModel):  # AssembleDeliveryFeesBase
+    name: str
     id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 

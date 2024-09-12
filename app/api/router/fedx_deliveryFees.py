@@ -30,33 +30,12 @@ async def get_assemble_by_id(
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
     assemble = await assemble_controller.get(id=id)
+    print(assemble)
     if assemble is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
         )
     return assemble
-
-
-# 用于独立创建
-# @router.post(
-#     "/{id}/create",
-#     response_model=AssembleDeliveryFees,
-#     status_code=status.HTTP_201_CREATED,
-# )
-# @limiter.limit("5/minute")  # 限制为每分钟5次请求
-# async def create_assemble(
-#     request: Request,
-#     assemble: AssembleDeliveryFeesCreate,
-#     session: AsyncSession = Depends(get_async_session),
-#     user: User = Depends(current_active_user),
-# ):
-#     assemble_controller = AssembleController(session=session, user_id=user.id)
-#     assemble = await assemble_controller.create(obj_in=assemble)
-#     if assemble is None:
-#         raise HTTPException(
-#             status_code=status.HTTP_409_CONFLICT, detail="Assemble creation failed"
-#         )
-#     return assemble
 
 
 # 创建带有子项的Assemble
@@ -82,18 +61,18 @@ async def create_assemble_with_children(
     return assemble
 
 
-# 根据id获取Assemble,并算出fedex价格
-@router.get("/{id}", response_model=AssembleDeliveryFees)
-async def get_assemble_by_id(
-    id: int,
-    session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(current_active_user),
-) -> AssembleDeliveryFees:
-    assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.select_with_children(id=id)
-    if assemble is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
-        )
+# # 根据id获取Assemble,并算出fedex价格
+# @router.get("/{id}", response_model=AssembleDeliveryFees)
+# async def get_assemble_by_id(
+#     id: int,
+#     session: AsyncSession = Depends(get_async_session),
+#     user: User = Depends(current_active_user),
+# ) -> AssembleDeliveryFees:
+#     assemble_controller = AssembleController(session=session, user_id=user.id)
+#     assemble = await assemble_controller.select_with_children(id=id)
+#     if assemble is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
+#         )
 
-    return assemble
+#     return assemble
