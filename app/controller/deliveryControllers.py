@@ -94,6 +94,7 @@ class AssembleController(
         except Exception as e:
             await self.session.rollback()
             logger.error(f"Error creating AssembleDeliveryFees with children: {e}")
+            return None
 
     async def update_with_children(
         self, obj_in: AssembleDeliveryFeesUpdate

@@ -29,7 +29,7 @@ async def get_assemble_by_id(
     user: User = Depends(current_active_user),
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.get(id=id)
+    assemble = await assemble_controller.select_with_children(id=id)
     print(assemble)
     if assemble is None:
         raise HTTPException(
@@ -42,8 +42,7 @@ async def get_assemble_by_id(
 @router.post(
     "/create",
     response_model=AssembleDeliveryFees,
-    status_code=status.HTTP_201_CREATED,
-)
+)  # status_code=status.HTTP_201_CREATED,
 @limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def create_assemble_with_children(
     request: Request,
@@ -52,13 +51,15 @@ async def create_assemble_with_children(
     user: User = Depends(current_active_user),
 ):
     assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.create_with_children(obj_in=assemble)
-    if assemble is None:
+    assemble_data = await assemble_controller.create_with_children(obj_in=assemble)
+    print(assemble)
+    print(type(assemble))
+    if assemble_data is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Assemble with children creation failed",
         )
-    return assemble
+    return assemble_data
 
 
 # # 根据id获取Assemble,并算出fedex价格

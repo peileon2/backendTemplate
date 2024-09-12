@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from app.schemas.fedex.ahs_schema import AhsCreate
-from app.schemas.fedex.base_rate_schema import BaseRateCreate
-from app.schemas.fedex.das_schema import DasCreate
-from app.schemas.fedex.oversize_schema import OversizeCreate
-from app.schemas.fedex.rdc_schema import RdcCreate
-from app.schemas.fedex.demand_schema import DemandChargeCreate
+from app.schemas.fedex.ahs_schema import AhsCreate, Ahs
+from app.schemas.fedex.base_rate_schema import BaseRateCreate, BaseRate
+from app.schemas.fedex.das_schema import DasCreate, Das
+from app.schemas.fedex.oversize_schema import OversizeCreate, Oversize
+from app.schemas.fedex.rdc_schema import RdcCreate, Rdc
+from app.schemas.fedex.demand_schema import DemandChargeCreate, DemandCharge
 
 
 class AssembleDeliveryFeesBase(BaseModel):
@@ -17,7 +17,7 @@ class AssembleDeliveryFeesBase(BaseModel):
     oversizes: List[OversizeCreate] = []
     ahs_items: List[AhsCreate] = []
     rdc_items: List[RdcCreate] = []
-    demand_item: DemandChargeCreate
+    demand_item: Optional[DemandChargeCreate]
 
 
 # class AssembleDeliveryFeesCreate(AssembleDeliveryFeesBase):
@@ -34,8 +34,15 @@ class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
     pass
 
 
-class AssembleDeliveryFees(BaseModel):  # AssembleDeliveryFeesBase
+# 存在一对多关系
+class AssembleDeliveryFees(BaseModel):
     name: str
+    base_rates: List[BaseRate] = []
+    das_items: List[Das] = []
+    oversizes: List[Oversize] = []
+    ahs_items: List[Ahs] = []
+    rdc_items: List[Rdc] = []
+    demand_item: Optional[DemandCharge] = None
     id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
