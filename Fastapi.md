@@ -195,3 +195,14 @@ alembic upgrade head
 
 ### 上传
 
+## 规划
+
+### 补全业务
+
+1. Fedex
+2. 其余运费
+
+### Pyqt
+
+### 服务器
+

@@ -97,7 +97,7 @@ class AssembleController(
             return None
 
     async def update_with_children(
-        self, obj_in: AssembleDeliveryFeesUpdate
+        self, obj_in: AssembleDeliveryFeesUpdate, id: int
     ) -> Optional[AssembleDeliveryFees]:
         """更新带有子项的AssembleDeliveryFees对象"""
         try:

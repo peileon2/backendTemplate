@@ -26,7 +26,7 @@ class AssembleDeliveryFeesBase(BaseModel):
 
 ## 根据主键修改
 class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
-    id: int
+    pass
 
 
 ## CreateWithChidren
