@@ -101,9 +101,9 @@ class AssembleController(
     ) -> Optional[AssembleDeliveryFees]:
         """更新带有子项的AssembleDeliveryFees对象"""
         try:
-            db_obj = await self.session.get(self.model, obj_in.id)
+            db_obj = await self.session.get(self.model, id)
             if not db_obj:
-                logger.error(f"Object with id {obj_in.id} not found.")
+                logger.error(f"Object with id {id} not found.")
                 return None
 
             # 更新父对象的字段

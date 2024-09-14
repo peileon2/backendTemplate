@@ -64,7 +64,6 @@ async def create_assemble_with_children(
 
 # 根据id删除Assemble
 @router.delete("/{id}/delete", status_code=status.HTTP_204_NO_CONTENT)
-@limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def delete_assemble_by_id(
     id: int,
     session: AsyncSession = Depends(get_async_session),
@@ -84,8 +83,7 @@ async def delete_assemble_by_id(
 
 
 # 根据id更新Assemble
-@router.put("/{id}/update", response_model=AssembleDeliveryFees)
-@limiter.limit("5/minute")  # 限制为每分钟5次请求
+@router.put("/{id}/update")
 async def update_assemble_by_id(
     id: int,
     assemble_update: AssembleDeliveryFeesUpdate,
@@ -107,7 +105,7 @@ async def update_assemble_by_id(
         obj_in=assemble_update, id=id
     )
 
-    return updated_assemble
+    return None
 
 
 # # 根据id获取Assemble,并算出fedex价格
