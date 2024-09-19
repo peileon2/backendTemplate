@@ -39,6 +39,13 @@ class AssembleController(
     def __init__(self, session: AsyncSession, user_id: UUID):
         super().__init__(model=AssembleDeliveryFees, session=session, user_id=user_id)
 
+    async def is_in_user(self, id: int):
+        # 假设这里是查询assemble的逻辑，并且检查是否属于当前用户
+        assemble = await self.session.get(self.model, id)
+        if assemble is None or assemble.user_id != self.user_id:
+            return False  # 不存在或不属于该用户
+        return True
+
     async def create_with_children(
         self, obj_in: AssembleDeliveryFeesChildren
     ) -> Optional[AssembleDeliveryFees]:
