@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 import logging
 from uuid import UUID
 
@@ -109,12 +109,12 @@ class AssembleController(
             result = await self.session.execute(
                 select(self.model)
                 .options(
-                    joinedload(self.model.ahs_items),
-                    joinedload(self.model.base_rates),
-                    joinedload(self.model.oversizes),
-                    joinedload(self.model.das_items),
-                    joinedload(self.model.rdc_items),
-                    joinedload(self.model.demand_charge),
+                    selectinload(self.model.ahs_items),
+                    selectinload(self.model.base_rates),
+                    selectinload(self.model.oversizes),
+                    selectinload(self.model.das_items),
+                    selectinload(self.model.rdc_items),
+                    selectinload(self.model.demand_charge),
                 )
                 .filter(self.model.id == id)
             )
@@ -123,6 +123,27 @@ class AssembleController(
             logger.error(f"Error selecting AssembleDeliveryFees with id {id}: {e}")
             await self.session.rollback()
             return None
+
+    # async def select_with_children(self, id: int) -> Optional[AssembleDeliveryFees]:
+    #     """通过ID查询AssembleDeliveryFees对象及其子项"""
+    #     try:
+    #         result = await self.session.execute(
+    #             select(self.model)
+    #             .options(
+    #                 joinedload(self.model.ahs_items),
+    #                 joinedload(self.model.base_rates),
+    #                 joinedload(self.model.oversizes),
+    #                 joinedload(self.model.das_items),
+    #                 joinedload(self.model.rdc_items),
+    #                 joinedload(self.model.demand_charge),
+    #             )
+    #             .filter(self.model.id == id)
+    #         )
+    #         return result.scalars().first()
+    #     except Exception as e:
+    #         logger.error(f"Error selecting AssembleDeliveryFees with id {id}: {e}")
+    #         await self.session.rollback()
+    #         return None
 
     async def delete_with_children(self, id: int) -> bool:
         """删除带有子项的AssembleDeliveryFees对象"""

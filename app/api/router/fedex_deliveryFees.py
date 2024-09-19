@@ -30,9 +30,9 @@ async def get_assemble_by_id(
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
-        raise HTTPException(detail="wrong id")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     assemble = await assemble_controller.select_with_children(id=id)
-    print(assemble)
+    print(assemble.__dict__)
     if assemble is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
@@ -72,7 +72,7 @@ async def delete_assemble_by_id(
 ):
     assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
-        raise HTTPException(detail="wrong id")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     assemble = await assemble_controller.select_with_children(id=id)
 
     if assemble is None:
@@ -95,7 +95,7 @@ async def update_assemble_by_id(
 ):
     assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
-        raise HTTPException(detail="wrong id")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     # 查找要更新的Assemble记录
     assemble = await assemble_controller.select_with_children(id=id)
 
