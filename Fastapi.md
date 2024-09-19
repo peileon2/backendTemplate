@@ -199,7 +199,10 @@ alembic upgrade head
 
 ### 补全业务
 
-1. Fedex
+1. Fedex、
+   1. 查出sku，得到它的所有属性
+   2. 筛选出对应的HD&gd，
+
 2. 其余运费
 
 ### Pyqt
