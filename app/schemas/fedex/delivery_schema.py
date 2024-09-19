@@ -2,12 +2,16 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 
-from app.schemas.fedex.ahs_schema import AhsCreate, Ahs
-from app.schemas.fedex.base_rate_schema import BaseRateCreate, BaseRate
-from app.schemas.fedex.das_schema import DasCreate, Das
-from app.schemas.fedex.oversize_schema import OversizeCreate, Oversize
-from app.schemas.fedex.rdc_schema import RdcCreate, Rdc
-from app.schemas.fedex.demand_schema import DemandChargeCreate, DemandCharge
+from app.schemas.fedex.ahs_schema import AhsCreate, Ahs, AhsUpdate
+from app.schemas.fedex.base_rate_schema import BaseRateCreate, BaseRate, BaseRateUpdate
+from app.schemas.fedex.das_schema import DasCreate, Das, DasUpdate
+from app.schemas.fedex.oversize_schema import OversizeCreate, Oversize, OversizeUpdate
+from app.schemas.fedex.rdc_schema import RdcCreate, Rdc, RdcUpdate
+from app.schemas.fedex.demand_schema import (
+    DemandChargeCreate,
+    DemandCharge,
+    DemandChargeUpdate,
+)
 
 
 class AssembleDeliveryFeesBase(BaseModel):
@@ -26,7 +30,13 @@ class AssembleDeliveryFeesBase(BaseModel):
 
 ## 根据主键修改
 class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
-    pass
+    name: str
+    base_rates: List[BaseRateUpdate] = []
+    das_items: List[DasUpdate] = []
+    oversizes: List[OversizeUpdate] = []
+    ahs_items: List[AhsUpdate] = []
+    rdc_items: List[RdcUpdate] = []
+    demand_item: Optional[DemandChargeUpdate]
 
 
 ## CreateWithChidren
