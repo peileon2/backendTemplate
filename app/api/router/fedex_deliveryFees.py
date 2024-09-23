@@ -15,6 +15,7 @@ from app.schemas.fedex.delivery_schema import (
 from app.controller.deliveryControllers import (
     AssembleController,
 )
+from app.schemas.fedex.accurate import Accurate
 
 # 初始化速率限制器
 limiter = Limiter(key_func=get_remote_address)
@@ -32,7 +33,6 @@ async def get_assemble_by_id(
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     assemble = await assemble_controller.select_with_children(id=id)
-    print(assemble.__dict__)
     if assemble is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
@@ -112,17 +112,19 @@ async def update_assemble_by_id(
     return None
 
 
-# # 根据id获取Assemble,并算出fedex价格
-# @router.get("/{id}", response_model=AssembleDeliveryFees)
-# async def get_assemble_by_id(
-#     id: int,
-#     session: AsyncSession = Depends(get_async_session),
-#     user: User = Depends(current_active_user),
-# ) -> AssembleDeliveryFees:
-#     assemble_controller = AssembleController(session=session, user_id=user.id)
-#     assemble = await assemble_controller.select_with_children(id=id)
-#     if assemble is None:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
-#         )
-#     return assemble
+# 根据id获取Assemble,并算出fedex价格
+@router.post("/accurate", response_model=AssembleDeliveryFees)
+async def accurate_fedex(
+    id: int,
+    accurate: Accurate,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+) -> AssembleDeliveryFees:
+    assemble_controller = AssembleController(session=session, user_id=user.id)
+    assemble = await assemble_controller.select_with_children(id=id)
+    print(accurate)
+    if assemble is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
+        )
+    return assemble

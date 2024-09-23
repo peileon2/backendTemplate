@@ -29,7 +29,7 @@ class AssembleDeliveryFeesBase(BaseModel):
 
 
 ## 根据主键修改
-class AssembleDeliveryFeesUpdate(AssembleDeliveryFeesBase):
+class AssembleDeliveryFeesUpdate(BaseModel):
     name: str
     base_rates: List[BaseRateUpdate] = []
     das_items: List[DasUpdate] = []
@@ -46,15 +46,30 @@ class AssembleDeliveryFeesChildren(AssembleDeliveryFeesBase):
 
 # 存在一对多关系
 class AssembleDeliveryFees(BaseModel):
+    id: int
     name: str
+    create_time: datetime = Field(default_factory=datetime.utcnow)
     base_rates: List[BaseRate] = []
     das_items: List[Das] = []
     oversizes: List[Oversize] = []
     ahs_items: List[Ahs] = []
     rdc_items: List[Rdc] = []
-    demand_item: Optional[DemandCharge] = None
-    id: int
-    create_time: datetime = Field(default_factory=datetime.utcnow)
+    demand_charge: Optional[DemandCharge] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+# class AssembleDeliveryFees(BaseModel):
+#     id: int
+#     name: str
+#     create_time: datetime = Field(default_factory=datetime.utcnow)
+#     base_rates: List[BaseRate] = []
+#     das_items: List[Das] = []
+#     oversizes: List[Oversize] = []
+#     ahs_items: List[Ahs] = []
+#     rdc_items: List[Rdc] = []
+#     demand_charge: Optional[DemandCharge] = None
+
+#     class Config:
+#         from_attributes = True
