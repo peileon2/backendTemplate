@@ -2,6 +2,7 @@ from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.exc import NoResultFound
 import logging
 from uuid import UUID
 
@@ -19,6 +20,7 @@ from app.schemas.fedex.delivery_schema import (
     AssembleDeliveryFeesUpdate,
     AssembleDeliveryFeesChildren,
 )
+from app.schemas.fedex.accurate import Accurate
 
 # from app.schemas.fedex.ahs_schema import AhsUpdate
 # from app.schemas.fedex.base_rate_schema import BaseRateUpdate
@@ -256,3 +258,71 @@ class AssembleController(
             demand_obj = result.scalars().first()
             if demand_obj:
                 await update_child(demand_obj, obj_in.demand_item)
+
+    async def select_with_filtered_children(
+        self, id: int, filter_accurate: Accurate
+    ) -> Optional[AssembleDeliveryFees]:
+        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+        try:
+            query = (
+                select(self.model)
+                .filter(self.model.id == id)
+                .options(
+                    joinedload(self.model.ahs_items).filter(
+                        Ahs.ahs_type == filter_accurate.ahs_type,
+                        Ahs.gd_hd_type == filter_accurate.gd_hd_type,
+                        Ahs.res_comm_type == filter_accurate.res_comm_type,
+                    ),
+                    joinedload(self.model.base_rates).filter(
+                        # 根据需要添加筛选条件
+                        BaseRate.zone == filter_accurate.zone,
+                        # BaseRate
+                    ),
+                    joinedload(self.model.oversizes).filter(
+                        # 根据需要添加筛选条件
+                        Oversize.gd_hd_type == filter_accurate.gd_hd_type,
+                        # Oversize
+                    ),
+                    joinedload(self.model.das_items).filter(
+                        # 根据需要添加筛选条件
+                        Das.das_type == filter_accurate.das_type,
+                        Das.gd_hd_type == filter_accurate.gd_hd_type,
+                        #
+                    ),
+                    joinedload(self.model.rdc_items).filter(
+                        # 根据需要添加筛选条件
+                        Rdc.gd_hd_type == filter_accurate.gd_hd_type,
+                        #
+                    ),
+                    joinedload(self.model.demand_charge),
+                )
+            )
+            result = await self.session.execute(query)
+            item = result.scalars().first()
+
+            if item is None:
+                raise NoResultFound(f"AssembleDeliveryFees with id {id} not found.")
+
+            # 检查子项是否为空
+            if (
+                not item.ahs_items
+                or not item.base_rates
+                or not item.oversizes
+                or not item.das_items
+                or not item.rdc_items
+            ):
+                raise NoResultFound(
+                    f"AssembleDeliveryFees with id {id} has empty child items."
+                )
+
+            return item
+        except NoResultFound as e:
+            logger.error(str(e))
+            await self.session.rollback()
+            raise
+        except Exception as e:
+            logger.error(
+                f"Error selecting filtered AssembleDeliveryFees with id {id}: {e}"
+            )
+            await self.session.rollback()
+            return None

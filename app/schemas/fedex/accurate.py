@@ -9,3 +9,4 @@ class Accurate(BaseModel):
     gd_hd_type: GdAndHd
     res_comm_type: ResAndComm
     das_type: DasType
+    zone: int

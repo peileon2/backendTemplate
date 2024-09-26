@@ -5,7 +5,6 @@ from app.api.deps import current_active_user
 from slowapi.errors import RateLimitExceeded
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy import select
 from app.models.user import User
 from app.schemas.fedex.delivery_schema import (
     AssembleDeliveryFees,
@@ -15,7 +14,9 @@ from app.schemas.fedex.delivery_schema import (
 from app.controller.deliveryControllers import (
     AssembleController,
 )
+from app.controller.skuControllers import SkuController
 from app.schemas.fedex.accurate import Accurate
+from app.factorys.fedexFactory import FedexFactory
 
 # 初始化速率限制器
 limiter = Limiter(key_func=get_remote_address)
@@ -116,15 +117,22 @@ async def update_assemble_by_id(
 @router.post("/accurate", response_model=AssembleDeliveryFees)
 async def accurate_fedex(
     id: int,
+    sku_id: int,
     accurate: Accurate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
-    assemble = await assemble_controller.select_with_children(id=id)
+    accurate_rates = await assemble_controller.select_with_filtered_children(
+        id=id,
+        accurate=accurate,
+    )
     print(accurate)
-    if assemble is None:
+    if accurate_rates is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
         )
-    return assemble
+    sku_controller = SkuController(session=session, user_id=user.id)
+    sku = sku_controller.get(id=sku_id)
+    FedexFactory(_sku=sku, _baserate=accurate_rates.base_rates)
+    return accurate_rates
