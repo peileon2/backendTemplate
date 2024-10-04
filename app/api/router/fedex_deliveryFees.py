@@ -87,7 +87,7 @@ async def delete_assemble_by_id(
 
 
 # 根据id更新Assemble
-@router.put("/{id}/update")
+@router.put("/{id}/update", response_model=AssembleDeliveryFees)
 async def update_assemble_by_id(
     id: int,
     assemble_update: AssembleDeliveryFeesUpdate,
@@ -107,10 +107,10 @@ async def update_assemble_by_id(
 
     # 调用控制器的更新方法
     updated_assemble = await assemble_controller.update_with_children(
-        obj_in=assemble_update, id=id
+        obj_in=assemble_update, delivery_id=id
     )
 
-    return None
+    return updated_assemble
 
 
 # 根据id获取Assemble,并算出fedex价格
@@ -124,15 +124,15 @@ async def accurate_fedex(
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
     accurate_rates = await assemble_controller.select_with_filtered_children(
-        id=id,
-        accurate=accurate,
+        id=id, filter_accurate=accurate
     )
-    print(accurate)
+    print(accurate_rates)
     if accurate_rates is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
         )
     sku_controller = SkuController(session=session, user_id=user.id)
     sku = sku_controller.get(id=sku_id)
+    print(sku)
     FedexFactory(_sku=sku, _baserate=accurate_rates.base_rates)
     return accurate_rates

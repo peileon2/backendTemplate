@@ -31,12 +31,11 @@ class AssembleDeliveryFeesBase(BaseModel):
 ## 根据主键修改
 class AssembleDeliveryFeesUpdate(BaseModel):
     name: str
-    base_rates: List[BaseRateUpdate] = []
-    das_items: List[DasUpdate] = []
-    oversizes: List[OversizeUpdate] = []
-    ahs_items: List[AhsUpdate] = []
-    rdc_items: List[RdcUpdate] = []
-    demand_item: Optional[DemandChargeUpdate]
+    das_items: List[DasCreate] = []
+    oversizes: List[OversizeCreate] = []
+    ahs_items: List[AhsCreate] = []
+    rdc_items: List[RdcCreate] = []
+    demand_item: Optional[DemandChargeCreate]
 
 
 ## CreateWithChidren

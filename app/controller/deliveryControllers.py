@@ -1,6 +1,6 @@
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.exc import NoResultFound
 import logging
@@ -143,121 +143,84 @@ class AssembleController(
             return False
 
     async def update_with_children(
-        self, obj_in: AssembleDeliveryFeesUpdate, id: int
-    ) -> Optional[AssembleDeliveryFees]:
-        """更新带有子项的AssembleDeliveryFees对象"""
+        self, obj_in: AssembleDeliveryFeesUpdate, delivery_id: int
+    ) -> AssembleDeliveryFees:
+        # 先更新 AssembleDeliveryFees 对象本身的属性
         try:
-            db_obj = await self.session.get(self.model, id)
+            db_obj = await self.session.get(self.model, delivery_id)
             if not db_obj:
-                logger.error(f"Object with id {id} not found.")
-                return None
+                raise ValueError(f"Object with id {delivery_id} not found")
+            # 进行更新操作
+            update_data = obj_in.model_dump(exclude_unset=True)
+            for field in update_data:
+                if hasattr(db_obj, field):
+                    setattr(db_obj, field, update_data[field])
 
-            # 更新父对象的字段
-            for field, value in obj_in.dict(exclude_unset=True).items():
-                setattr(db_obj, field, value)
+            # 删除 Ahs 子项
+            self.session.execute(
+                delete(Ahs).where(Ahs.delivery_version_id == delivery_id)
+            )
 
-            # 更新子项
-            await self._update_children(obj_in, delivery_id=id)
-            await self.session.commit()
-            await self.session.refresh(db_obj)
+            # 删除 Das 子项
+            self.session.execute(
+                delete(Das).where(Das.delivery_version_id == delivery_id)
+            )
+
+            # 删除 Oversize 子项
+            self.session.execute(
+                delete(Oversize).where(Oversize.delivery_version_id == delivery_id)
+            )
+            # 删除 demand_surcharge 子项
+            self.session.execute(
+                delete(DemandCharge).where(
+                    DemandCharge.delivery_version_id == delivery_id
+                )
+            )
+            # 删除 RDC 子项
+            self.session.execute(
+                delete(Rdc).where(Rdc.delivery_version_id == delivery_id)
+            )
+            # 重新创建子项
+            # 创建 Das 子项
+            for das in obj_in.das_items:
+                das_data = das.model_dump()
+                new_das = Das(**das_data)
+                db_obj.das_items.append(new_das)
+
+            # 创建 Oversize 子项
+            for oversize in obj_in.oversizes:
+                oversize_data = oversize.model_dump()
+                new_oversize = Oversize(**oversize_data)
+                db_obj.oversizes.append(new_oversize)
+
+            # 创建 Ahs 子项
+            for ahs in obj_in.ahs_items:
+                ahs_data = ahs.model_dump()
+                new_ahs = Ahs(**ahs_data)
+                db_obj.ahs_items.append(new_ahs)
+
+            # 创建 Rdc 子项
+            for rdc in obj_in.rdc_items:
+                rdc_data = rdc.model_dump()
+                new_rdc = Rdc(**rdc_data)
+                db_obj.rdc_items.append(new_rdc)
+
+            # 创建 DemandCharge子项（如果有）
+            if obj_in.demand_item:
+                demand_charge_data = obj_in.demand_item.model_dump()
+                db_obj.demand_charge = DemandCharge(**demand_charge_data)
+
+            self.session.add(db_obj)  # 添加父对象到 session
+            # 提交修改
+            self.session.commit()
+            self.session.refresh(db_obj)
             return db_obj
         except Exception as e:
-            await self.session.rollback()
-            logger.error(f"Error updating AssembleDeliveryFees with children: {e}")
-            return None
-
-    async def _update_children(
-        self, obj_in: AssembleDeliveryFeesUpdate, delivery_id: int
-    ):
-        """私有方法，更新多个子项"""
-
-        async def update_child(child_obj, update_data):
-            """更新子项的通用方法"""
-            for field, value in update_data.dict(exclude_unset=True).items():
-                setattr(child_obj, field, value)
-
-        # 更新 Ahs 子项
-        if obj_in.ahs_items:
-            for ahs in obj_in.ahs_items:
-                result = await self.session.execute(
-                    select(Ahs)
-                    .filter(Ahs.id == ahs.id)
-                    .filter(
-                        Ahs.delivery_version_id == delivery_id
-                    )  # 添加 delivery_id 的过滤条件
-                )
-                ahs_obj = result.scalars().first()
-                if ahs_obj:
-                    await update_child(ahs_obj, ahs)
-
-        # 更新 BaseRate 子项
-        if obj_in.base_rates:
-            for base_rate in obj_in.base_rates:
-                result = await self.session.execute(
-                    select(BaseRate)
-                    .filter(BaseRate.id == base_rate.id)
-                    .filter(
-                        BaseRate.delivery_version_id == delivery_id
-                    )  # 添加 delivery_id 的过滤条件
-                )
-                base_rate_obj = result.scalars().first()
-                if base_rate_obj:
-                    await update_child(base_rate_obj, base_rate)
-
-        # 更新 Oversize 子项
-        if obj_in.oversizes:
-            for oversize in obj_in.oversizes:
-                result = await self.session.execute(
-                    select(Oversize)
-                    .filter(Oversize.id == oversize.id)
-                    .filter(
-                        Oversize.delivery_version_id == delivery_id
-                    )  # 添加 delivery_id 的过滤条件
-                )
-                oversize_obj = result.scalars().first()
-                if oversize_obj:
-                    await update_child(oversize_obj, oversize)
-
-        # 更新 Das 子项
-        if obj_in.das_items:
-            for das in obj_in.das_items:
-                result = await self.session.execute(
-                    select(Das)
-                    .filter(Das.id == das.id)
-                    .filter(
-                        Das.delivery_version_id == delivery_id
-                    )  # 添加 delivery_id 的过滤条件
-                )
-                das_obj = result.scalars().first()
-                if das_obj:
-                    await update_child(das_obj, das)
-
-        # 更新 Rdc 子项
-        if obj_in.rdc_items:
-            for rdc in obj_in.rdc_items:
-                result = await self.session.execute(
-                    select(Rdc)
-                    .filter(Rdc.id == rdc.id)
-                    .filter(
-                        Rdc.delivery_version_id == delivery_id
-                    )  # 添加 delivery_id 的过滤条件
-                )
-                rdc_obj = result.scalars().first()
-                if rdc_obj:
-                    await update_child(rdc_obj, rdc)
-
-        # 更新 DemandCharge 子项
-        if obj_in.demand_item:
-            result = await self.session.execute(
-                select(DemandCharge)
-                .filter(DemandCharge.id == obj_in.demand_item.id)
-                .filter(
-                    DemandCharge.delivery_version_id == delivery_id
-                )  # 添加 delivery_id 的过滤条件
+            logger.error(
+                f"Error selecting AssembleDeliveryFees with id {delivery_id}: {e}"
             )
-            demand_obj = result.scalars().first()
-            if demand_obj:
-                await update_child(demand_obj, obj_in.demand_item)
+            await self.session.rollback()
+            return None
 
     async def select_with_filtered_children(
         self, id: int, filter_accurate: Accurate
@@ -268,33 +231,12 @@ class AssembleController(
                 select(self.model)
                 .filter(self.model.id == id)
                 .options(
-                    joinedload(self.model.ahs_items).filter(
-                        Ahs.ahs_type == filter_accurate.ahs_type,
-                        Ahs.gd_hd_type == filter_accurate.gd_hd_type,
-                        Ahs.res_comm_type == filter_accurate.res_comm_type,
-                    ),
-                    joinedload(self.model.base_rates).filter(
-                        # 根据需要添加筛选条件
-                        BaseRate.zone == filter_accurate.zone,
-                        # BaseRate
-                    ),
-                    joinedload(self.model.oversizes).filter(
-                        # 根据需要添加筛选条件
-                        Oversize.gd_hd_type == filter_accurate.gd_hd_type,
-                        # Oversize
-                    ),
-                    joinedload(self.model.das_items).filter(
-                        # 根据需要添加筛选条件
-                        Das.das_type == filter_accurate.das_type,
-                        Das.gd_hd_type == filter_accurate.gd_hd_type,
-                        #
-                    ),
-                    joinedload(self.model.rdc_items).filter(
-                        # 根据需要添加筛选条件
-                        Rdc.gd_hd_type == filter_accurate.gd_hd_type,
-                        #
-                    ),
-                    joinedload(self.model.demand_charge),
+                    selectinload(self.model.ahs_items),
+                    selectinload(self.model.base_rates),
+                    selectinload(self.model.oversizes),
+                    selectinload(self.model.das_items),
+                    selectinload(self.model.rdc_items),
+                    selectinload(self.model.demand_charge),
                 )
             )
             result = await self.session.execute(query)
@@ -303,13 +245,40 @@ class AssembleController(
             if item is None:
                 raise NoResultFound(f"AssembleDeliveryFees with id {id} not found.")
 
+            # 进行后续的过滤
+            item.ahs_items = [
+                ahs
+                for ahs in item.ahs_items
+                if ahs.ahs_type == filter_accurate.ahs_type
+            ]
+            item.base_rates = [
+                br for br in item.base_rates if br.zone == filter_accurate.zone
+            ]
+            item.oversizes = [
+                oz
+                for oz in item.oversizes
+                if oz.gd_hd_type == filter_accurate.gd_hd_type
+            ]
+            item.das_items = [
+                das
+                for das in item.das_items
+                if das.das_type == filter_accurate.das_type
+            ]
+            item.rdc_items = [
+                rdc
+                for rdc in item.rdc_items
+                if rdc.gd_hd_type == filter_accurate.gd_hd_type
+            ]
+
             # 检查子项是否为空
-            if (
-                not item.ahs_items
-                or not item.base_rates
-                or not item.oversizes
-                or not item.das_items
-                or not item.rdc_items
+            if not any(
+                [
+                    item.ahs_items,
+                    item.base_rates,
+                    item.oversizes,
+                    item.das_items,
+                    item.rdc_items,
+                ]
             ):
                 raise NoResultFound(
                     f"AssembleDeliveryFees with id {id} has empty child items."

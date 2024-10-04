@@ -19,7 +19,7 @@ class RdcUpdate(RdcBase):
 
 
 class Rdc(RdcBase):
-    delivery_version_id: int
+    id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

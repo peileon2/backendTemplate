@@ -24,6 +24,7 @@ class AhsUpdate(AhsBase):
 
 ## 展示用类,直接对父增删改，故无需暴露子id
 class Ahs(AhsBase):
+    id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

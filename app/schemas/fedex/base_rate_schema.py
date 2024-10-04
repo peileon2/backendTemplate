@@ -20,6 +20,7 @@ class BaseRateUpdate(BaseRateBase):
 
 
 class BaseRate(BaseRateBase):
+    id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

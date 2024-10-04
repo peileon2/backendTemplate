@@ -21,6 +21,7 @@ class DasUpdate(DasBase):
 
 
 class Das(DasBase):
+    id: int
     create_time: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

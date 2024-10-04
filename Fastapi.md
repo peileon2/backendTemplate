@@ -183,6 +183,136 @@ alembic upgrade head
   * 批量根据父表，改变子表
 * 保存费用文档信息
 
+
+
+### CURD JSON
+
+* UPDATE JSON
+
+更新操作：
+
+1. baserate采用类似sku的curd
+2. 其余子项修改，全部采用删除，然后新建
+3. 目前bug（一对多的更新相当麻烦）
+
+```json
+{
+    "name": "Updated Delivery Fee Name",
+    "base_rates": [
+        {
+            "id": 1, 
+            "rate_weight": 10,
+            "zone": 2,
+            "fees": 15.75
+        },
+        {
+            "id": 2,
+            "rate_weight": 20,
+            "zone": 3,
+            "fees": 25.50
+        }
+    ],
+    "das_items": [
+        {
+            "id": 1, 
+            "das_type": 1, 
+            "gd_hd_type": 1,  
+            "res_comm_type": 1,
+            "fees": 30.00
+        }
+    ],
+    "oversizes": [
+        {
+            "id": 1,  
+            "gd_hd_type": 2,  
+            "fees": 50.00
+        }
+    ],
+    "ahs_items": [
+        {
+            "id": 1,  
+            "ahs_type": 1,  
+            "gd_hd_type": 1, 
+            "res_comm_type": 2,  
+            "fees": 40.00
+        }
+    ],
+    "rdc_items": [
+        {
+            "id": 1,  
+            "gd_hd_type": 2,  
+            "fees": 20.00
+        }
+    ],
+    "demand_item": {
+        "DIM": 100,
+        "peak_os_charge": 5.00,
+        "peak_rdc_charge": 3.50,
+        "fuel_rate": 1.25,
+        "id": 1  
+    }
+}
+```
+
+* CREATE JSON
+
+```json
+{
+  "name": "New Delivery Fee Name",
+  "base_rates": [
+    {
+      "rate_weight": 15,
+      "zone": 1,
+      "fees": 10.50
+    },
+    {
+      "rate_weight": 25,
+      "zone": 2,
+      "fees": 20.75
+    }
+  ],
+  "das_items": [
+    {
+      "das_type": 1,
+      "gd_hd_type": 1,
+      "res_comm_type": 1,
+      "fees": 25.00
+    }
+  ],
+  "oversizes": [
+    {
+      "gd_hd_type": 2,
+      "fees": 30.00
+    }
+  ],
+  "ahs_items": [
+    {
+      "ahs_type": 2,
+      "gd_hd_type": 1,
+      "res_comm_type": 2,
+      "fees": 35.00
+    }
+  ],
+  "rdc_items": [
+    {
+      "gd_hd_type": 1,
+      "fees": 15.00
+    }
+  ],
+  "demand_item": {
+    "DIM": 200,
+    "peak_os_charge": 4.00,
+    "peak_rdc_charge": 2.50,
+    "fuel_rate": 1.10
+  }
+}
+
+```
+
+### 数据校验
+
+1. zone必须是2~8且只能是2~8
+
 ## 服务器
 
 ### 跨域
