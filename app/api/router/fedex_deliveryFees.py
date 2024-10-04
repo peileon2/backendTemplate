@@ -43,8 +43,8 @@ async def get_assemble_by_id(
 
 # 创建带有子项的Assemble
 @router.post(
-    "/create", status_code=status.HTTP_201_CREATED
-)  # , response_model=AssembleDeliveryFees
+    "/create", status_code=status.HTTP_201_CREATED, response_model=AssembleDeliveryFees
+)  #
 @limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def create_assemble_with_children(
     request: Request,
@@ -87,7 +87,7 @@ async def delete_assemble_by_id(
 
 
 # 根据id更新Assemble
-@router.put("/{id}/update", response_model=AssembleDeliveryFees)
+@router.put("/{id}/update")  # , response_model=AssembleDeliveryFees
 async def update_assemble_by_id(
     id: int,
     assemble_update: AssembleDeliveryFeesUpdate,
@@ -106,11 +106,11 @@ async def update_assemble_by_id(
         )
 
     # 调用控制器的更新方法
-    updated_assemble = await assemble_controller.update_with_children(
+    await assemble_controller.update_with_children(
         obj_in=assemble_update, delivery_id=id
     )
 
-    return updated_assemble
+    return None
 
 
 # 根据id获取Assemble,并算出fedex价格

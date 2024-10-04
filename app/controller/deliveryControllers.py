@@ -112,7 +112,7 @@ class AssembleController(
                 select(self.model)
                 .options(
                     joinedload(self.model.ahs_items),
-                    joinedload(self.model.base_rates),
+                    # joinedload(self.model.base_rates),
                     joinedload(self.model.oversizes),
                     joinedload(self.model.das_items),
                     joinedload(self.model.rdc_items),
@@ -152,32 +152,37 @@ class AssembleController(
                 raise ValueError(f"Object with id {delivery_id} not found")
             # 进行更新操作
             update_data = obj_in.model_dump(exclude_unset=True)
+            print(update_data)
+            parent_field = ["name"]
             for field in update_data:
+                print(field)
+                if field not in parent_field:
+                    continue
                 if hasattr(db_obj, field):
                     setattr(db_obj, field, update_data[field])
 
             # 删除 Ahs 子项
-            self.session.execute(
+            await self.session.execute(
                 delete(Ahs).where(Ahs.delivery_version_id == delivery_id)
             )
 
             # 删除 Das 子项
-            self.session.execute(
+            await self.session.execute(
                 delete(Das).where(Das.delivery_version_id == delivery_id)
             )
 
             # 删除 Oversize 子项
-            self.session.execute(
+            await self.session.execute(
                 delete(Oversize).where(Oversize.delivery_version_id == delivery_id)
             )
             # 删除 demand_surcharge 子项
-            self.session.execute(
+            await self.session.execute(
                 delete(DemandCharge).where(
                     DemandCharge.delivery_version_id == delivery_id
                 )
             )
             # 删除 RDC 子项
-            self.session.execute(
+            await self.session.execute(
                 delete(Rdc).where(Rdc.delivery_version_id == delivery_id)
             )
             # 重新创建子项
@@ -210,14 +215,13 @@ class AssembleController(
                 demand_charge_data = obj_in.demand_item.model_dump()
                 db_obj.demand_charge = DemandCharge(**demand_charge_data)
 
-            self.session.add(db_obj)  # 添加父对象到 session
             # 提交修改
-            self.session.commit()
-            self.session.refresh(db_obj)
-            return db_obj
+            await self.session.commit()
+            await self.session.refresh(db_obj)
+            return None
         except Exception as e:
             logger.error(
-                f"Error selecting AssembleDeliveryFees with id {delivery_id}: {e}"
+                f"Error update AssembleDeliveryFees with id {delivery_id}: {e}"
             )
             await self.session.rollback()
             return None

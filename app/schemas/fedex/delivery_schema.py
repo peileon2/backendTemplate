@@ -48,7 +48,7 @@ class AssembleDeliveryFees(BaseModel):
     id: int
     name: str
     create_time: datetime = Field(default_factory=datetime.utcnow)
-    base_rates: List[BaseRate] = []
+    # base_rates: List[BaseRate] = []
     das_items: List[Das] = []
     oversizes: List[Oversize] = []
     ahs_items: List[Ahs] = []
