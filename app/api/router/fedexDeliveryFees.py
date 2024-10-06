@@ -109,7 +109,6 @@ async def update_assemble_by_id(
     await assemble_controller.update_with_children(
         obj_in=assemble_update, delivery_id=id
     )
-
     return None
 
 

@@ -16,7 +16,7 @@ class BaseRateCreate(BaseRateBase):
 
 
 class BaseRateUpdate(BaseRateBase):
-    id: int
+    pass
 
 
 class BaseRate(BaseRateBase):
