@@ -43,8 +43,8 @@ async def get_assemble_by_id(
 
 # 创建带有子项的Assemble
 @router.post(
-    "/create", status_code=status.HTTP_201_CREATED, response_model=AssembleDeliveryFees
-)  #
+    "/create", status_code=status.HTTP_201_CREATED
+)  # , response_model=AssembleDeliveryFees
 @limiter.limit("5/minute")  # 限制为每分钟5次请求
 async def create_assemble_with_children(
     request: Request,
@@ -61,7 +61,8 @@ async def create_assemble_with_children(
             status_code=status.HTTP_409_CONFLICT,
             detail="Assemble with children creation failed",
         )
-    return None
+    # assemble_data  <class 'app.schemas.fedex.delivery_schema.AssembleDeliveryFeesChildren'>
+    return assemble_data
 
 
 # 根据id删除Assemble
@@ -87,7 +88,7 @@ async def delete_assemble_by_id(
 
 
 # 根据id更新Assemble
-@router.put("/{id}/update")  # , response_model=AssembleDeliveryFees
+@router.put("/{id}/update", response_model=AssembleDeliveryFees)  #
 async def update_assemble_by_id(
     id: int,
     assemble_update: AssembleDeliveryFeesUpdate,
@@ -106,10 +107,10 @@ async def update_assemble_by_id(
         )
 
     # 调用控制器的更新方法
-    await assemble_controller.update_with_children(
+    Updated_assemble = await assemble_controller.update_with_children(
         obj_in=assemble_update, delivery_id=id
     )
-    return None
+    return Updated_assemble
 
 
 # 根据id获取Assemble,并算出fedex价格
@@ -122,6 +123,8 @@ async def accurate_fedex(
     user: User = Depends(current_active_user),
 ) -> AssembleDeliveryFees:
     assemble_controller = AssembleController(session=session, user_id=user.id)
+    if not await assemble_controller.is_in_user(id=id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     accurate_rates = await assemble_controller.select_with_filtered_children(
         id=id, filter_accurate=accurate
     )
@@ -130,8 +133,32 @@ async def accurate_fedex(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
         )
+    print(accurate_rates)
+    return accurate_rates
     sku_controller = SkuController(session=session, user_id=user.id)
     sku = sku_controller.get(id=sku_id)
     print(sku)
     FedexFactory(_sku=sku, _baserate=accurate_rates.base_rates)
+    return accurate_rates
+
+
+# 根据id获取Assemble,并算出fedex价格
+@router.post("/getter_ahs")
+async def getter_ahs(
+    id: int,
+    accurate: Accurate,
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
+):
+    assemble_controller = AssembleController(session=session, user_id=user.id)
+    if not await assemble_controller.is_in_user(id=id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
+    accurate_rates = await assemble_controller.select_with_filtered_children(
+        id=id, filter_accurate=accurate
+    )
+    print(accurate_rates)
+    if accurate_rates is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
+        )
     return accurate_rates

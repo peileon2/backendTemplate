@@ -208,7 +208,7 @@ alembic upgrade head
     ],
     "oversizes": [
         {
-            "gd_hd_type": 2,  
+            "gd_hd_type": 1,  
             "fees": 50.00
         }
     ],
@@ -216,13 +216,13 @@ alembic upgrade head
         {
             "ahs_type": 1,  
             "gd_hd_type": 1, 
-            "res_comm_type": 2,  
+            "res_comm_type": 1,  
             "fees": 40.00
         }
     ],
     "rdc_items": [
         {
-            "gd_hd_type": 2,  
+            "gd_hd_type": 1,  
             "fees": 20.00
         }
     ],
