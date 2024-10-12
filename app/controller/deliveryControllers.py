@@ -209,11 +209,81 @@ class AssembleController(
             await self.session.rollback()
             raise e  # 抛出异常或返回详细的错误信息
 
-    async def select_with_filtered_children(self, id: int, filter_accurate: Accurate):
-        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+    async def select_base_rate(self, id: int, filter_accurate: Accurate):
+        """通过ID查询base_rate，并根据条件筛选子项"""
+        try:
+            # ahs 的查询
+            query = select(BaseRate).filter_by(
+                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+            )  #
+            result = await self.session.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error select AssembleDeliveryFees with id {id}: {e}")
+            await self.session.rollback()
+            raise e  # 抛出异常或返回详细的错误信息
+
+    async def select_ahs(self, id: int, filter_accurate: Accurate):
+        """通过ID查询，并根据条件筛选子项"""
         try:
             # ahs 的查询
             query = select(Ahs).filter_by(
+                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+            )  #
+            result = await self.session.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error select AssembleDeliveryFees with id {id}: {e}")
+            await self.session.rollback()
+            raise e  # 抛出异常或返回详细的错误信息
+
+    async def select_das(self, id: int, filter_accurate: Accurate):
+        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+        try:
+            # ahs 的查询
+            query = select(Das).filter_by(
+                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+            )  #
+            result = await self.session.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error select AssembleDeliveryFees with id {id}: {e}")
+            await self.session.rollback()
+            raise e  # 抛出异常或返回详细的错误信息
+
+    async def select_rdc(self, id: int, filter_accurate: Accurate):
+        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+        try:
+            # ahs 的查询
+            query = select(Rdc).filter_by(
+                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+            )  #
+            result = await self.session.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error select AssembleDeliveryFees with id {id}: {e}")
+            await self.session.rollback()
+            raise e  # 抛出异常或返回详细的错误信息
+
+    async def select_os(self, id: int, filter_accurate: Accurate):
+        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+        try:
+            # ahs 的查询
+            query = select(Oversize).filter_by(
+                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+            )  #
+            result = await self.session.execute(query)
+            return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error select AssembleDeliveryFees with id {id}: {e}")
+            await self.session.rollback()
+            raise e  # 抛出异常或返回详细的错误信息
+
+    async def select_demand_surcharge(self, id: int, filter_accurate: Accurate):
+        """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
+        try:
+            # ahs 的查询
+            query = select(DemandCharge).filter_by(
                 delivery_version_id=id, ahs_type=filter_accurate.ahs_type
             )  #
             result = await self.session.execute(query)
