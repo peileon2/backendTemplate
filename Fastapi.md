@@ -293,6 +293,8 @@ alembic upgrade head
 ### 数据校验
 
 1. zone必须是2~8且只能是2~8
+1. 子项直接查询
+1. email 类优化
 
 ## 服务器
 
