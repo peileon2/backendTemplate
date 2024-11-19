@@ -121,44 +121,20 @@ async def accurate_fedex(
     accurate: Accurate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
-) -> AssembleDeliveryFees:
+) -> AssembleDeliveryFees:  ## 此处映射类存在问题
     assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
-    accurate_rates = await assemble_controller.select_with_filtered_children(
-        id=id, filter_accurate=accurate
-    )
-    print(accurate_rates)
-    if accurate_rates is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
-        )
-    print(accurate_rates)
-    return accurate_rates
+    ## 不要查主从表，直接通过accurate查子表，收入factory得出结论
+    ## 先测试各个代码
+    base_rate = assemble_controller.select_base_rate()
+    ahs = assemble_controller.select_base_rate()
+    os = assemble_controller.select_os()
+    rdc = assemble_controller.select_rdc()
+    das = assemble_controller.select_das()
+    demandsurchage = assemble_controller.select_demand_surcharge()
+    ## 查出sku数据
     sku_controller = SkuController(session=session, user_id=user.id)
-    sku = sku_controller.get(id=sku_id)
-    print(sku)
-    FedexFactory(_sku=sku, _baserate=accurate_rates.base_rates)
-    return accurate_rates
-
-
-# 根据id获取Assemble,并算出fedex价格
-@router.post("/getter_ahs")
-async def getter_ahs(
-    id: int,
-    accurate: Accurate,
-    session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(current_active_user),
-):
-    assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
-    accurate_rates = await assemble_controller.select_with_filtered_children(
-        id=id, filter_accurate=accurate
-    )
-    print(accurate_rates)
-    if accurate_rates is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Assemble not found"
-        )
-    return accurate_rates
+    ## 根据factory内容，算出Fedex报价类
