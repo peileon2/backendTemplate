@@ -60,6 +60,7 @@ class FedexFactory:
         self.oversize = _oversize
         self.rdc = _rdc
         self.demandCharge = _demandCharge
+        self.judge = Judge(Sku=_sku)
 
     @property
     def max_length(self):

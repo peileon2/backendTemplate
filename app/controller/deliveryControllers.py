@@ -209,12 +209,16 @@ class AssembleController(
             await self.session.rollback()
             raise e  # 抛出异常或返回详细的错误信息
 
-    async def select_base_rate(self, id: int, filter_accurate: Accurate):
+    async def select_base_rate(
+        self, id: int, filter_accurate: Accurate, rate_weight: int
+    ):
         """通过ID查询base_rate，并根据条件筛选子项"""
         try:
             # ahs 的查询
             query = select(BaseRate).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+                delivery_version_id=id,
+                zone=filter_accurate.zone,
+                rate_weight=rate_weight,
             )  #
             result = await self.session.execute(query)
             return result.scalars().first()
@@ -228,7 +232,10 @@ class AssembleController(
         try:
             # ahs 的查询
             query = select(Ahs).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+                delivery_version_id=id,
+                ahs_type=filter_accurate.ahs_type,
+                gd_hd_type=filter_accurate.gd_hd_type,
+                res_comm_type=filter_accurate.res_comm_type,
             )  #
             result = await self.session.execute(query)
             return result.scalars().first()
@@ -242,7 +249,10 @@ class AssembleController(
         try:
             # ahs 的查询
             query = select(Das).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+                delivery_version_id=id,
+                das_type=filter_accurate.das_type,
+                gd_hd_type=filter_accurate.gd_hd_type,
+                res_comm_type=filter_accurate.res_comm_type,
             )  #
             result = await self.session.execute(query)
             return result.scalars().first()
@@ -256,7 +266,7 @@ class AssembleController(
         try:
             # ahs 的查询
             query = select(Rdc).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+                delivery_version_id=id, gd_hd_type=filter_accurate.gd_hd_type
             )  #
             result = await self.session.execute(query)
             return result.scalars().first()
@@ -270,7 +280,7 @@ class AssembleController(
         try:
             # ahs 的查询
             query = select(Oversize).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
+                delivery_version_id=id, gd_hd_type=filter_accurate.gd_hd_type
             )  #
             result = await self.session.execute(query)
             return result.scalars().first()
@@ -283,9 +293,7 @@ class AssembleController(
         """通过ID查询AssembleDeliveryFees对象及其子项，并根据条件筛选子项"""
         try:
             # ahs 的查询
-            query = select(DemandCharge).filter_by(
-                delivery_version_id=id, ahs_type=filter_accurate.ahs_type
-            )  #
+            query = select(DemandCharge).filter_by(delivery_version_id=id)  #
             result = await self.session.execute(query)
             return result.scalars().first()
         except Exception as e:

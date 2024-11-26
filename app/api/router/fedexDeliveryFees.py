@@ -16,7 +16,7 @@ from app.controller.deliveryControllers import (
 )
 from app.controller.skuControllers import SkuController
 from app.schemas.fedex.accurate import Accurate
-from app.factorys.fedexFactory import FedexFactory
+from app.factorys.fedexFactory import FedexFactory, Judge
 
 # 初始化速率限制器
 limiter = Limiter(key_func=get_remote_address)
@@ -127,14 +127,25 @@ async def accurate_fedex(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
     ## 不要查主从表，直接通过accurate查子表，收入factory得出结论
     ## 先测试各个代码
-    base_rate = assemble_controller.select_base_rate()
-    ahs = assemble_controller.select_base_rate()
-    os = assemble_controller.select_os()
-    rdc = assemble_controller.select_rdc()
-    das = assemble_controller.select_das()
-    demandsurchage = assemble_controller.select_demand_surcharge()
+    base_rate = assemble_controller.select_base_rate(id=id, filter_accurate=accurate)
+    ahs = assemble_controller.select_base_rate(id=id, filter_accurate=accurate)
+    os = assemble_controller.select_os(id=id, filter_accurate=accurate)
+    rdc = assemble_controller.select_rdc(id=id, filter_accurate=accurate)
+    das = assemble_controller.select_das(id=id, filter_accurate=accurate)
+    demandsurchage = assemble_controller.select_demand_surcharge(id=id)
     ## 查出sku数据
     sku_controller = SkuController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
+    sku = SkuController.get(id=sku_id)
+    Factory = FedexFactory(
+        _sku=sku,
+        _baserate=base_rate,
+        _ahs=ahs,
+        _das=das,
+        _oversize=os,
+        _rdc=rdc,
+        _demandCharge=demandsurchage,
+    )
+    ##这里有问题factory需要根据judge的内容去修改
     ## 根据factory内容，算出Fedex报价类
