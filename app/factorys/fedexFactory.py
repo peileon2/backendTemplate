@@ -151,3 +151,4 @@ class FedexFactory:
             + self.rds_charge
             + self.peak_rdc_charge
         ) * (1 + self.demandCharge.fuel_rate)
+    

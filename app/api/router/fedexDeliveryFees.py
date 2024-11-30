@@ -11,6 +11,7 @@ from app.schemas.fedex.delivery_schema import (
     AssembleDeliveryFeesChildren,
     AssembleDeliveryFeesUpdate,
 )
+from app.schemas.fedex.fedex_accurated_schema import FedexAccurated
 from app.controller.deliveryControllers import (
     AssembleController,
 )
@@ -121,7 +122,7 @@ async def accurate_fedex(
     accurate: Accurate,
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_active_user),
-) -> AssembleDeliveryFees:  ## 此处映射类存在问题
+) -> FedexAccurated:  ## 此处映射类存在问题
     assemble_controller = AssembleController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
@@ -137,7 +138,7 @@ async def accurate_fedex(
     sku_controller = SkuController(session=session, user_id=user.id)
     if not await assemble_controller.is_in_user(id=id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="wrong id")
-    sku = SkuController.get(id=sku_id)
+    sku = sku_controller.get(id=sku_id)
     Factory = FedexFactory(
         _sku=sku,
         _baserate=base_rate,
@@ -146,6 +147,15 @@ async def accurate_fedex(
         _oversize=os,
         _rdc=rdc,
         _demandCharge=demandsurchage,
+    )
+    return FedexAccurated(
+        AHS=Factory.ahs_charge,
+        OS=Factory.oversize_charge,
+        DAS=Factory.das_charge,
+        RDC=Factory.rds_charge,
+        peak_os_charge=Factory.peak_os_charge,
+        peak_ahs_charge=Factory.peak_ahs_charge,
+        peak_rdc_charge=Factory.peak_rdc_charge,
     )
     ##这里有问题factory需要根据judge的内容去修改
     ## 根据factory内容，算出Fedex报价类
